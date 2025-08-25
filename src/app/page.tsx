@@ -1,83 +1,110 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ClipboardList, Users, Settings } from "lucide-react";
+
+export default function HomePage() {
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-sans sm:p-20">
-      <main className="row-start-2 flex flex-col items-center gap-[32px] sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-center font-mono text-sm/6 sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="rounded bg-black/[.05] px-1 py-0.5 font-mono font-semibold dark:bg-white/[.06]">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-gradient-to-b from-white to-slate-50 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="w-full max-w-2xl space-y-6">
+        <header className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">올바른정형외과</h1>
+          <p className="text-muted-foreground mt-2 text-lg">대기열 관리 시스템</p>
+        </header>
 
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <a
-            className="bg-foreground text-background flex h-10 items-center justify-center gap-2 rounded-full border border-solid border-transparent px-4 text-sm font-medium transition-colors hover:bg-[#383838] sm:h-12 sm:w-auto sm:px-5 sm:text-base dark:hover:bg-[#ccc]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="flex h-10 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-4 text-sm font-medium transition-colors hover:border-transparent hover:bg-[#f2f2f2] sm:h-12 sm:w-auto sm:px-5 sm:text-base md:w-[158px] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* 환자 접수 */}
+          <Card className="rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5" />
+                환자 접수
+              </CardTitle>
+              <CardDescription>
+                새로운 환자를 대기열에 등록하고 고유한 대기열 링크를 생성합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-muted-foreground space-y-2 text-sm">
+                <p>• 환자 기본 정보 입력</p>
+                <p>• 진료 항목 선택</p>
+                <p>• 예상 대기 시간 안내</p>
+                <p>• 고유 대기열 링크 생성</p>
+              </div>
+              <Button className="w-full" onClick={() => window.open("/register", "_blank")}>
+                접수 시작
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* 관리자 대시보드 */}
+          <Card className="rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                관리자 대시보드
+              </CardTitle>
+              <CardDescription>현재 대기열 현황을 확인하고 환자 정보를 관리합니다.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-muted-foreground space-y-2 text-sm">
+                <p>• 실시간 대기열 현황</p>
+                <p>• 환자 정보 수정</p>
+                <p>• 대기열 삭제</p>
+                <p>• 통계 및 분석</p>
+              </div>
+              <Link href="/admin" className="block">
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => window.open("/admin", "_blank")}
+                >
+                  대시보드 열기
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
-      </main>
-      <footer className="row-start-3 flex flex-wrap items-center justify-center gap-[24px]">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* 시스템 정보 */}
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              시스템 정보
+            </CardTitle>
+            <CardDescription>대기열 관리 시스템의 주요 기능과 특징을 확인하세요.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <h4 className="font-semibold">환자용 기능</h4>
+                <ul className="text-muted-foreground space-y-1 text-sm">
+                  <li>• 실시간 대기 시간 확인</li>
+                  <li>• 3분마다 자동 업데이트</li>
+                  <li>• 진행률 표시</li>
+                  <li>• 모바일 최적화</li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h4 className="font-semibold">관리자 기능</h4>
+                <ul className="text-muted-foreground space-y-1 text-sm">
+                  <li>• 실시간 대기열 모니터링</li>
+                  <li>• 환자 정보 편집</li>
+                  <li>• 진료 항목별 대기 시간 설정</li>
+                  <li>• 통계 및 분석</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <footer className="text-muted-foreground pt-4 text-center text-sm">
+          © {new Date().getFullYear()} 올바른정형외과 · 대기열 관리 시스템
+        </footer>
+      </div>
     </div>
   );
 }

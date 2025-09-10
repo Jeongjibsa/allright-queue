@@ -52,27 +52,10 @@ export function useCreateReservation() {
       service: string;
       date: string;
     }) => {
-      // 실제로는 API 호출
-      // 현재는 localStorage에 저장
-      const reservationId =
-        `R-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`.toUpperCase();
-
-      const reservationData: ReservationData = {
-        reservationId,
-        name: data.name,
-        patientId: data.patientId,
-        phone: data.phone,
-        service: data.service,
-        date: data.date,
-        estimatedWaitTime: 10, // 기본값, 실제로는 서비스별로 다름
-        createdAt: Date.now(),
-      };
-
-      // localStorage에 예약 정보 저장
+      const reservationData = createReservationRecord(data);
       const existingReservations = JSON.parse(localStorage.getItem("reservations") || "[]");
       existingReservations.push(reservationData);
       localStorage.setItem("reservations", JSON.stringify(existingReservations));
-
       return reservationData;
     },
     onSuccess: () => {
@@ -117,4 +100,26 @@ export function useDeleteReservation() {
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
     },
   });
+}
+
+// Pure helper for testing
+export function createReservationRecord(data: {
+  name: string;
+  patientId: string;
+  phone: string;
+  service: string;
+  date: string;
+}): ReservationData {
+  const reservationId = `R-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`.toUpperCase();
+  const estimatedWaitTime = 10; // default; could map from service in future
+  return {
+    reservationId,
+    name: data.name,
+    patientId: data.patientId,
+    phone: data.phone,
+    service: data.service,
+    date: data.date,
+    estimatedWaitTime,
+    createdAt: Date.now(),
+  };
 }

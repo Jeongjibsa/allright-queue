@@ -360,137 +360,9 @@ export default function AdminDashboard() {
           ) : (
             <div className="space-y-4">
               {queues.map((queue) => (
-                <div key={queue.token} className="rounded-lg border p-4">
-                  {editingQueue?.token === queue.token ? (
-                    // 편집 모드
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="name" className="text-sm font-medium">
-                            이름
-                          </Label>
-                          <Input
-                            id="name"
-                            value={editForm.name}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({ ...prev, name: e.target.value }))
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="age" className="text-sm font-medium">
-                            나이
-                          </Label>
-                          <Input
-                            id="age"
-                            type="number"
-                            value={editForm.age}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({ ...prev, age: e.target.value }))
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="room" className="text-sm font-medium">
-                            진료실
-                          </Label>
-                          <Input
-                            id="room"
-                            value={editForm.room}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({ ...prev, room: e.target.value }))
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="doctor" className="text-sm font-medium">
-                            담당의
-                          </Label>
-                          <Select
-                            value={editForm.doctor}
-                            onValueChange={(value) => {
-                              setEditForm((prev) => ({ ...prev, doctor: value }));
-                              // 담당의 선택 시 해당 의료진의 진료실 정보를 자동으로 설정
-                              const selectedDoctor = doctorOptions.find(
-                                (option) => option.value === value
-                              );
-                              if (selectedDoctor) {
-                                const doctorName = selectedDoctor.value;
-                                const storedDoctors = localStorage.getItem("doctors");
-                                if (storedDoctors) {
-                                  const doctors = JSON.parse(storedDoctors);
-                                  const doctor = doctors.find((d: any) => d.name === doctorName);
-                                  if (doctor) {
-                                    setEditForm((prev) => ({ ...prev, room: doctor.room }));
-                                  }
-                                }
-                              }
-                            }}
-                          >
-                            <SelectTrigger id="doctor" className="w-full">
-                              <SelectValue placeholder="담당의를 선택하세요" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {doctorOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="service" className="text-sm font-medium">
-                            진료 항목
-                          </Label>
-                          <Select
-                            value={editForm.service}
-                            onValueChange={(value) =>
-                              setEditForm((prev) => ({ ...prev, service: value }))
-                            }
-                          >
-                            <SelectTrigger id="service" className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {serviceOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="estimatedWaitTime" className="text-sm font-medium">
-                            예상 대기시간 (분)
-                          </Label>
-                          <Input
-                            id="estimatedWaitTime"
-                            type="number"
-                            value={editForm.estimatedWaitTime}
-                            onChange={(e) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                estimatedWaitTime: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-3 pt-4">
-                        <Button onClick={cancelEdit} variant="outline" size="sm">
-                          취소
-                        </Button>
-                        <Button onClick={handleSaveEdit} size="sm">
-                          저장
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    // 보기 모드
+                <div key={queue.token} className="rounded-lg border">
+                  {/* 대기열 정보 표시 */}
+                  <div className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="mb-2 flex items-center gap-4">
@@ -500,40 +372,20 @@ export default function AdminDashboard() {
                           {queue.remainingWaitTime <= 5 && queue.remainingWaitTime > 0 && (
                             <Badge variant="destructive">임박</Badge>
                           )}
-                          {queue.remainingWaitTime <= 0 && (
-                            <Badge variant="default" className="bg-green-500">
-                              완료
-                            </Badge>
-                          )}
+                          {queue.room && <Badge variant="outline">{queue.room}호</Badge>}
+                          {queue.doctor && <Badge variant="outline">{queue.doctor}</Badge>}
                         </div>
                         <div className="text-muted-foreground space-y-1 text-sm">
                           <div>대기번호: {queue.token}</div>
-                          <div>
-                            진료실: {queue.room || "—"} | 담당의: {queue.doctor || "—"}
-                          </div>
-                          <div>
-                            남은 시간: {formatTime(queue.remainingWaitTime)} | 접수 시간:{" "}
-                            {formatCreatedTime(queue.createdAt)}
-                          </div>
+                          <div>예상 대기시간: {queue.estimatedWaitTime}분</div>
+                          <div>남은 대기시간: {queue.remainingWaitTime}분</div>
+                          <div>접수 시간: {new Date(queue.createdAt).toLocaleTimeString()}</div>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => viewQueue(queue.token)} variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
                         <Button onClick={() => startEdit(queue)} variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        {queue.remainingWaitTime > 0 && (
-                          <Button
-                            onClick={() => completeQueue(queue.token)}
-                            variant="outline"
-                            size="sm"
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
                         <Button
                           onClick={() => deleteQueue(queue.token)}
                           variant="outline"
@@ -541,6 +393,142 @@ export default function AdminDashboard() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 편집 폼 (접을 수 있는 스타일) */}
+                  {editingQueue?.token === queue.token && (
+                    <div className="overflow-hidden bg-white transition-all duration-700 ease-in-out">
+                      <div className="animate-in fade-in-0 slide-in-from-top-2 transform space-y-4 px-4 pt-2 pb-4 transition-all duration-700 ease-in-out">
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="name" className="text-sm font-medium">
+                                이름
+                              </Label>
+                              <Input
+                                id="name"
+                                value={editForm.name}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="age" className="text-sm font-medium">
+                                나이
+                              </Label>
+                              <Input
+                                id="age"
+                                type="number"
+                                value={editForm.age}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({ ...prev, age: e.target.value }))
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="room" className="text-sm font-medium">
+                                진료실
+                              </Label>
+                              <Input
+                                id="room"
+                                value={editForm.room}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({ ...prev, room: e.target.value }))
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="doctor" className="text-sm font-medium">
+                                담당의
+                              </Label>
+                              <Select
+                                value={editForm.doctor}
+                                onValueChange={(value) => {
+                                  setEditForm((prev) => ({ ...prev, doctor: value }));
+                                  // 담당의 선택 시 해당 의료진의 진료실 정보를 자동으로 설정
+                                  const selectedDoctor = doctorOptions.find(
+                                    (option) => option.value === value
+                                  );
+                                  if (selectedDoctor) {
+                                    const doctorName = selectedDoctor.value;
+                                    const storedDoctors = localStorage.getItem("doctors");
+                                    if (storedDoctors) {
+                                      const doctors = JSON.parse(storedDoctors);
+                                      const doctor = doctors.find(
+                                        (d: any) => d.name === doctorName
+                                      );
+                                      if (doctor) {
+                                        setEditForm((prev) => ({ ...prev, room: doctor.room }));
+                                      }
+                                    }
+                                  }
+                                }}
+                              >
+                                <SelectTrigger id="doctor" className="w-full">
+                                  <SelectValue placeholder="담당의를 선택하세요" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {doctorOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="service" className="text-sm font-medium">
+                                진료 항목
+                              </Label>
+                              <Select
+                                value={editForm.service}
+                                onValueChange={(value) =>
+                                  setEditForm((prev) => ({ ...prev, service: value }))
+                                }
+                              >
+                                <SelectTrigger id="service" className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {serviceOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="estimatedWaitTime" className="text-sm font-medium">
+                                예상 대기시간 (분)
+                              </Label>
+                              <Input
+                                id="estimatedWaitTime"
+                                type="number"
+                                value={editForm.estimatedWaitTime}
+                                onChange={(e) =>
+                                  setEditForm((prev) => ({
+                                    ...prev,
+                                    estimatedWaitTime: e.target.value,
+                                  }))
+                                }
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-3 pt-2">
+                            <Button onClick={cancelEdit} variant="outline" size="sm">
+                              취소
+                            </Button>
+                            <Button onClick={handleSaveEdit} size="sm">
+                              저장
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

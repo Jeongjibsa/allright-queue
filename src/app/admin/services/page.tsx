@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, Trash2, Save, X, AlertTriangle } from "lucide-react";
+import { Collapse } from "@/components/ui/collapse";
 
 type ServiceItem = {
   id: string;
@@ -199,34 +200,111 @@ export default function ServicesPage() {
               {services.map((service) => (
                 <div
                   key={service.id}
-                  className={`rounded-lg border p-4 ${!service.isActive ? "opacity-60" : ""}`}
+                  className={`rounded-lg border ${!service.isActive ? "opacity-60" : ""}`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="mb-2 flex items-center gap-4">
-                        <div className="font-medium">{service.label}</div>
-                        <Badge variant="outline">{service.value}</Badge>
-                        <Badge variant="secondary">{service.waitTime}분</Badge>
-                        {!service.isActive && <Badge variant="destructive">비활성</Badge>}
+                  {/* 서비스 정보 표시 */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="mb-2 flex items-center gap-4">
+                          <div className="font-medium">{service.label}</div>
+                          <Badge variant="outline">{service.value}</Badge>
+                          <Badge variant="secondary">{service.waitTime}분</Badge>
+                          {!service.isActive && <Badge variant="destructive">비활성</Badge>}
+                        </div>
+                        <div className="text-muted-foreground text-sm">ID: {service.id}</div>
                       </div>
-                      <div className="text-muted-foreground text-sm">ID: {service.id}</div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => toggleServiceStatus(service.id)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        {service.isActive ? "비활성화" : "활성화"}
-                      </Button>
-                      <Button onClick={() => startEdit(service)} variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button onClick={() => deleteService(service.id)} variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => toggleServiceStatus(service.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {service.isActive ? "비활성화" : "활성화"}
+                        </Button>
+                        <Button
+                          id={`edit-trigger-${service.id}`}
+                          onClick={() => startEdit(service)}
+                          variant="outline"
+                          size="sm"
+                          aria-expanded={editingService?.id === service.id}
+                          aria-controls={`edit-panel-${service.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => deleteService(service.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
+
+                  {/* 편집 폼 (접을 수 있는 스타일) */}
+                  <Collapse open={editingService?.id === service.id} className="bg-white">
+                    <div
+                      id={`edit-panel-${service.id}`}
+                      className="transform space-y-4 px-4 pt-2 pb-4"
+                      role="region"
+                      aria-labelledby={`edit-trigger-${service.id}`}
+                    >
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div className="space-y-2">
+                          <Label htmlFor={`value-${service.id}`} className="text-sm font-medium">
+                            항목 코드
+                          </Label>
+                          <Input
+                            id={`value-${service.id}`}
+                            placeholder="예: general"
+                            value={formData.value}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, value: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`label-${service.id}`} className="text-sm font-medium">
+                            항목명
+                          </Label>
+                          <Input
+                            id={`label-${service.id}`}
+                            placeholder="예: 일반진료"
+                            value={formData.label}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, label: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`waitTime-${service.id}`} className="text-sm font-medium">
+                            예상 대기시간 (분)
+                          </Label>
+                          <Input
+                            id={`waitTime-${service.id}`}
+                            type="number"
+                            placeholder="예: 10"
+                            value={formData.waitTime}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, waitTime: e.target.value }))
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 pt-2">
+                        <Button onClick={cancelEdit} variant="outline" size="sm">
+                          <X className="mr-2 h-4 w-4" />
+                          취소
+                        </Button>
+                        <Button onClick={updateService} size="sm">
+                          <Save className="mr-2 h-4 w-4" />
+                          저장
+                        </Button>
+                      </div>
+                    </div>
+                  </Collapse>
                 </div>
               ))}
             </div>
@@ -234,14 +312,12 @@ export default function ServicesPage() {
         </CardContent>
       </Card>
 
-      {/* 추가/편집 폼 */}
-      {(isAdding || editingService) && (
+      {/* 추가 폼 */}
+      {isAdding && (
         <Card>
           <CardHeader>
-            <CardTitle>{isAdding ? "진료항목 추가" : "진료항목 수정"}</CardTitle>
-            <CardDescription>
-              {isAdding ? "새로운 진료항목을 추가합니다." : "진료항목 정보를 수정합니다."}
-            </CardDescription>
+            <CardTitle>진료항목 추가</CardTitle>
+            <CardDescription>새로운 진료항목을 추가합니다.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -286,9 +362,9 @@ export default function ServicesPage() {
                   <X className="mr-2 h-4 w-4" />
                   취소
                 </Button>
-                <Button onClick={isAdding ? addService : updateService}>
+                <Button onClick={addService}>
                   <Save className="mr-2 h-4 w-4" />
-                  {isAdding ? "추가" : "저장"}
+                  추가
                 </Button>
               </div>
             </div>

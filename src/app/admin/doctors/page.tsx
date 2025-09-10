@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, Trash2, Save, X, AlertTriangle, User, Stethoscope } from "lucide-react";
+import { Collapse } from "@/components/ui/collapse";
 
 type DoctorItem = {
   id: string;
@@ -232,38 +233,125 @@ export default function DoctorsPage() {
               {doctors.map((doctor) => (
                 <div
                   key={doctor.id}
-                  className={`rounded-lg border p-4 ${!doctor.isActive ? "opacity-60" : ""}`}
+                  className={`rounded-lg border ${!doctor.isActive ? "opacity-60" : ""}`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="mb-2 flex items-center gap-4">
-                        <div className="font-medium">{doctor.name}</div>
-                        <Badge variant="outline">{doctor.specialty}</Badge>
-                        <Badge variant="secondary">{doctor.room}호</Badge>
-                        {!doctor.isActive && <Badge variant="destructive">비활성</Badge>}
+                  {/* 의료진 정보 표시 */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="mb-2 flex items-center gap-4">
+                          <div className="font-medium">{doctor.name}</div>
+                          <Badge variant="outline">{doctor.specialty}</Badge>
+                          <Badge variant="secondary">{doctor.room}호</Badge>
+                          {!doctor.isActive && <Badge variant="destructive">비활성</Badge>}
+                        </div>
+                        <div className="text-muted-foreground space-y-1 text-sm">
+                          <div>ID: {doctor.id}</div>
+                          {doctor.phone && <div>연락처: {doctor.phone}</div>}
+                          {doctor.email && <div>이메일: {doctor.email}</div>}
+                        </div>
                       </div>
-                      <div className="text-muted-foreground space-y-1 text-sm">
-                        <div>ID: {doctor.id}</div>
-                        {doctor.phone && <div>연락처: {doctor.phone}</div>}
-                        {doctor.email && <div>이메일: {doctor.email}</div>}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => toggleDoctorStatus(doctor.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          {doctor.isActive ? "비활성화" : "활성화"}
+                        </Button>
+                        <Button onClick={() => startEdit(doctor)} variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button onClick={() => deleteDoctor(doctor.id)} variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => toggleDoctorStatus(doctor.id)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        {doctor.isActive ? "비활성화" : "활성화"}
-                      </Button>
-                      <Button onClick={() => startEdit(doctor)} variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button onClick={() => deleteDoctor(doctor.id)} variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
+
+                  {/* 편집 폼 (Collapse 적용) */}
+                  <Collapse open={editingDoctor?.id === doctor.id} className="bg-white">
+                    <div className="space-y-4 px-4 pt-2 pb-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor={`name-${doctor.id}`} className="text-sm font-medium">
+                            이름 *
+                          </Label>
+                          <Input
+                            id={`name-${doctor.id}`}
+                            placeholder="예: 김의사"
+                            value={formData.name}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, name: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`specialty-${doctor.id}`} className="text-sm font-medium">
+                            진료과목 *
+                          </Label>
+                          <Input
+                            id={`specialty-${doctor.id}`}
+                            placeholder="예: 정형외과"
+                            value={formData.specialty}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, specialty: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`room-${doctor.id}`} className="text-sm font-medium">
+                            진료실 *
+                          </Label>
+                          <Input
+                            id={`room-${doctor.id}`}
+                            placeholder="예: 101"
+                            value={formData.room}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, room: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`phone-${doctor.id}`} className="text-sm font-medium">
+                            연락처
+                          </Label>
+                          <Input
+                            id={`phone-${doctor.id}`}
+                            placeholder="예: 010-1234-5678"
+                            value={formData.phone}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor={`email-${doctor.id}`} className="text-sm font-medium">
+                            이메일
+                          </Label>
+                          <Input
+                            id={`email-${doctor.id}`}
+                            type="email"
+                            placeholder="예: doctor@allright.com"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData((prev) => ({ ...prev, email: e.target.value }))
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 pt-2">
+                        <Button onClick={cancelEdit} variant="outline" size="sm">
+                          <X className="mr-2 h-4 w-4" />
+                          취소
+                        </Button>
+                        <Button onClick={updateDoctor} size="sm">
+                          <Save className="mr-2 h-4 w-4" />
+                          저장
+                        </Button>
+                      </div>
+                    </div>
+                  </Collapse>
                 </div>
               ))}
             </div>
@@ -271,14 +359,12 @@ export default function DoctorsPage() {
         </CardContent>
       </Card>
 
-      {/* 추가/편집 폼 */}
-      {(isAdding || editingDoctor) && (
+      {/* 추가 폼 */}
+      {isAdding && (
         <Card>
           <CardHeader>
-            <CardTitle>{isAdding ? "의료진 추가" : "의료진 수정"}</CardTitle>
-            <CardDescription>
-              {isAdding ? "새로운 의료진을 추가합니다." : "의료진 정보를 수정합니다."}
-            </CardDescription>
+            <CardTitle>의료진 추가</CardTitle>
+            <CardDescription>새로운 의료진을 추가합니다.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -347,9 +433,9 @@ export default function DoctorsPage() {
                   <X className="mr-2 h-4 w-4" />
                   취소
                 </Button>
-                <Button onClick={isAdding ? addDoctor : updateDoctor}>
+                <Button onClick={addDoctor}>
                   <Save className="mr-2 h-4 w-4" />
-                  {isAdding ? "추가" : "저장"}
+                  추가
                 </Button>
               </div>
             </div>

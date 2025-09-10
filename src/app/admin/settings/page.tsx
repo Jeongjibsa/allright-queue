@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Bell, Shield, Database, Palette } from "lucide-react";
+import { useThemePreset } from "@/app/providers";
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useThemePreset();
   return (
     <div className="space-y-6 p-6">
       {/* 시스템 설정 */}
@@ -137,12 +139,28 @@ export default function SettingsPage() {
           <CardDescription>시스템의 외관을 사용자 정의합니다.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>테마 프리셋</Label>
+            <div className="flex gap-2">
+              {(["light", "dark", "clinic"] as const).map((preset) => (
+                <Button
+                  key={preset}
+                  size="sm"
+                  variant={theme === preset ? "default" : "outline"}
+                  onClick={() => setTheme(preset)}
+                >
+                  {preset}
+                </Button>
+              ))}
+            </div>
+            <p className="text-muted-foreground text-xs">전역 프리셋을 적용합니다.</p>
+          </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>다크 모드</Label>
               <p className="text-muted-foreground text-sm">어두운 테마를 사용합니다.</p>
             </div>
-            <Switch />
+            <Switch checked={theme === "dark"} onCheckedChange={(v) => setTheme(v ? "dark" : "light")} />
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

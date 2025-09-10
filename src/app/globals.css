@@ -113,6 +113,13 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* Additional preset: clinic */
+:root[data-theme="clinic"] {
+  --primary: oklch(0.7 0.12 230); /* teal-ish */
+  --accent: oklch(0.82 0.09 220);
+  --ring: oklch(0.7 0.12 230);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

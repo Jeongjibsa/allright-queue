@@ -34,7 +34,7 @@ export function base64UrlDecode<T = unknown>(b64url: string): T | null {
     const bytes = fromBase64(padded);
     const json = new TextDecoder().decode(bytes);
     return JSON.parse(json) as T;
-  } catch (_) {
+  } catch {
     return null;
   }
 }

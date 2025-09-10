@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { LayoutDashboard, Stethoscope, Users, Settings, Menu, X, Contact } from "lucide-react";
+import { LayoutDashboard, Stethoscope, Users, Settings, Menu, X, Contact, Calendar } from "lucide-react";
 
 const sidebarItems = [
   {
@@ -28,6 +28,11 @@ const sidebarItems = [
     title: "환자 관리",
     href: "/admin/patients",
     icon: Users,
+  },
+  {
+    title: "예약 관리",
+    href: "/admin/reservations",
+    icon: Calendar,
   },
   {
     title: "설정",

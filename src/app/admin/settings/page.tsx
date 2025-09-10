@@ -156,6 +156,25 @@ export default function SettingsPage() {
             </div>
             <p className="text-muted-foreground text-xs">전역 프리셋을 적용합니다.</p>
           </div>
+
+          <div className="space-y-2">
+            <Label>TweakCN Presets</Label>
+            <div className="flex max-h-48 flex-wrap gap-2 overflow-auto rounded border p-2">
+              {ALL_PRESETS.filter((p) => !["light", "dark", "clinic", "ocean", "forest", "sunset"].includes(p)).map(
+                (preset) => (
+                  <Button
+                    key={preset}
+                    size="sm"
+                    variant={theme === preset ? "default" : "outline"}
+                    onClick={() => setTheme(preset as any)}
+                  >
+                    {preset}
+                  </Button>
+                )
+              )}
+            </div>
+            <p className="text-muted-foreground text-xs">tweakcn.com에서 설치한 프리셋을 포함합니다.</p>
+          </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>다크 모드</Label>

@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "add-component": "pnpx shadcn@latest add",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "add:themes": "bash ./scripts/add-themes.sh"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",

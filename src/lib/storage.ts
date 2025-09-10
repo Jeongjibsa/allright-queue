@@ -84,7 +84,6 @@ export function ensureDefaultDoctors(): void {
   setJSON(LS_KEYS.doctors, defaults);
 }
 
-
 export function ensureDefaultReservations(): void {
   const existing = getJSON<ReservationData[]>(LS_KEYS.reservations);
   if (existing) return;

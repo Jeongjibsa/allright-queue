@@ -31,6 +31,10 @@ import {
 
 import { getActiveDoctors, getActiveServices } from "@/lib/storage";
 import { formatMinutesCompact, formatTimeHM } from "@/lib/time";
+import { LineChart } from "@/components/charts/LineChart";
+import { countsByDate } from "@/lib/analytics";
+import { getJSON } from "@/lib/storage";
+import { LS_KEYS } from "@/lib/constants";
 
 type QueueItem = {
   token: string;
@@ -258,6 +262,23 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* 트렌드 그래프 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>환자 추세 (7일)</CardTitle>
+          <CardDescription>최근 일주일 간 등록 환자 추세</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {
+            (() => {
+              const patients = getJSON<{ lastVisit: string }[]>(LS_KEYS.patients) || [];
+              const data = countsByDate(patients.map((p) => p.lastVisit));
+              const points = data.map((d, i) => ({ x: i, y: d.count }));
+              return <LineChart points={points} />;
+            })()
+          }
+        </CardContent>
+      </Card>
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>

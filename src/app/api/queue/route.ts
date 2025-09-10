@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { QueueData } from "@/types/queue";
 import { SERVICE_WAIT_TIMES } from "@/lib/constants";
+
 import { InMemoryQueueStore, RedisQueueStore, computeRemainingWait } from "@/lib/queueStore";
 import { isRedisEnabled } from "@/lib/env";
 
 // 저장소 선택 (환경변수 기반)
 const store = isRedisEnabled() ? new RedisQueueStore() : new InMemoryQueueStore();
+
 
 // GET: 대기열 상태 조회
 export async function GET(request: NextRequest) {

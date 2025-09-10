@@ -27,6 +27,7 @@
 - Hooks: `useX` naming in `src/lib/` (e.g., `useReservation.ts`).
 - Styles: Tailwind CSS 4 utilities; prefer co-locating classNames in components and `cn`/merge helpers.
 - Documentation: Write all docs (PRD, ADRs, comments in `.md` files) in English only. Exception: README may be bilingual with Korean as default and a full English version.
+ - Tests: Every new feature must include unit tests (Vitest). Prefer testing pure helpers; only add UI tests when necessary. Place tests under `src/**/__tests__` and ensure `pnpm test` passes in CI.
 
 ## Testing Guidelines
 

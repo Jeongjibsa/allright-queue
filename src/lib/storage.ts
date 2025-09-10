@@ -84,32 +84,6 @@ export function ensureDefaultDoctors(): void {
   setJSON(LS_KEYS.doctors, defaults);
 }
 
-export function ensureDefaultPatients(): void {
-  const existing = getJSON<PatientItem[]>(LS_KEYS.patients);
-  if (existing) return;
-  const today = new Date().toISOString().split("T")[0];
-  const defaults: PatientItem[] = [
-    {
-      id: "1",
-      name: "김환자",
-      age: 45,
-      phone: "010-1111-2222",
-      lastVisit: today,
-      isActive: true,
-      notes: "정형외과 진료",
-    },
-    {
-      id: "2",
-      name: "이환자",
-      age: 32,
-      phone: "010-2222-3333",
-      lastVisit: today,
-      isActive: true,
-      notes: "재활치료",
-    },
-  ];
-  setJSON(LS_KEYS.patients, defaults);
-}
 
 export function ensureDefaultReservations(): void {
   const existing = getJSON<ReservationData[]>(LS_KEYS.reservations);

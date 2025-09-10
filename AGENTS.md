@@ -26,7 +26,7 @@
 - Components: file names lowercase (e.g., `button.tsx`), exported component identifiers in PascalCase.
 - Hooks: `useX` naming in `src/lib/` (e.g., `useReservation.ts`).
 - Styles: Tailwind CSS 4 utilities; prefer co-locating classNames in components and `cn`/merge helpers.
-- Documentation: Write all docs (README, PRD, ADRs, comments in `.md` files) in English only.
+- Documentation: Write all docs (PRD, ADRs, comments in `.md` files) in English only. Exception: README may be bilingual with Korean as default and a full English version.
 
 ## Testing Guidelines
 
@@ -40,7 +40,7 @@
 - Branch naming: English only, kebab-case, with prefixes `feat/`, `fix/`, `docs/`, `chore/`, `refactor/`, `perf/`, `test/` (e.g., `feat/queue-progress-bar`, `fix/admin-refresh`). Avoid non-ASCII, spaces, and underscores.
 - Scope small, logically grouped changes; run `pnpm lint && pnpm format` before committing.
 - PRs must include: problem statement, summary of changes, screenshots/GIFs for UI, and any follow-ups.
-- Auto-generated PRs: add label `gen by codex` (and include `[gen by codex]` in the title if labels are unavailable).
+- Auto-generated PRs: add label `auto-generated`. Also include `[gen by codex]` in the title for traceability (and use the tag if labels are unavailable).
 - Link related issues and note breaking changes in the description.
 
 ## Security & Configuration Tips

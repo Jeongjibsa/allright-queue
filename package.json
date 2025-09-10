@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "add-component": "pnpx shadcn@latest add"
+    "add-component": "pnpx shadcn@latest add",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
@@ -45,6 +47,9 @@
     "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.7",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.3",
+    "jsdom": "^24.1.3",
+    "@types/jsdom": "^21.1.7"
   }
 }

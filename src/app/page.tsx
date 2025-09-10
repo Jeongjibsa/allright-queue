@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+// import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,27 @@ import { ClipboardList, Users, Settings, Calendar } from "lucide-react";
 
 export default function HomePage() {
   const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const dev = process.env.NEXT_PUBLIC_DEV_PREFILL === "true";
+    if (!dev) return;
+    // Create a demo queue item to test lookup
+    (async () => {
+      try {
+        const r = await fetch("/api/queue", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "테스트환자", age: 30, service: "일반진료", room: "101", doctor: "김의사" }),
+        });
+        if (r.ok) {
+          const data = await r.json();
+          setToken(data.token);
+        }
+      } catch (e) {
+        console.error("demo queue init failed", e);
+      }
+    })();
+  }, []);
 
   const openQueue = () => {
     if (!token) return alert("대기열 토큰을 입력하세요.");

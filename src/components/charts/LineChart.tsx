@@ -1,30 +1,71 @@
-import React from "react";
+"use client";
 
-export type DataPoint = { x: number; y: number };
+import { CartesianGrid, LabelList, Line, LineChart as RechartsLineChart, XAxis } from "recharts";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
-export function computeLinePath(points: DataPoint[], width: number, height: number, pad = 16) {
-  if (points.length === 0) return "";
-  const xs = points.map((p) => p.x);
-  const ys = points.map((p) => p.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = 0; // baseline at zero
-  const maxY = Math.max(1, Math.max(...ys));
+export const description = "A line chart with a label";
 
-  const sx = (x: number) => pad + ((x - minX) / (maxX - minX || 1)) * (width - pad * 2);
-  const sy = (y: number) => height - pad - ((y - minY) / (maxY - minY || 1)) * (height - pad * 2);
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+];
 
-  return points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${sx(p.x).toFixed(2)},${sy(p.y).toFixed(2)}`)
-    .join(" ");
-}
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--chart-1)",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "var(--chart-2)",
+  },
+} satisfies ChartConfig;
 
-export function LineChart({ points, width = 320, height = 120 }: { points: DataPoint[]; width?: number; height?: number }) {
-  const d = computeLinePath(points, width, height);
+export function LineChart() {
   return (
-    <svg width={width} height={height} role="img" aria-label="line chart">
-      <path d={d} fill="none" stroke="currentColor" strokeWidth={2} />
-    </svg>
+    <ChartContainer config={chartConfig}>
+      <RechartsLineChart
+        accessibilityLayer
+        data={chartData}
+        margin={{
+          top: 20,
+          left: 12,
+          right: 12,
+        }}
+      >
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="month"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={(value) => value.slice(0, 3)}
+        />
+        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
+        <Line
+          dataKey="desktop"
+          type="natural"
+          stroke="var(--color-desktop)"
+          strokeWidth={2}
+          dot={{
+            fill: "var(--color-desktop)",
+          }}
+          activeDot={{
+            r: 6,
+          }}
+        >
+          <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
+        </Line>
+      </RechartsLineChart>
+    </ChartContainer>
   );
 }
-

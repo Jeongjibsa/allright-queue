@@ -1,26 +1,55 @@
-import React from "react";
+"use client";
 
-export type BarDatum = { x: number; y: number };
+import { Bar, BarChart as RechartsBarChart, CartesianGrid, XAxis } from "recharts";
 
-export function computeBars(data: BarDatum[], width: number, height: number, pad = 16) {
-  const maxY = Math.max(1, ...data.map((d) => d.y));
-  const barW = (width - pad * 2) / Math.max(1, data.length);
-  return data.map((d, i) => {
-    const x = pad + i * barW;
-    const h = ((d.y / maxY) * (height - pad * 2)) | 0;
-    const y = height - pad - h;
-    return { x, y, w: Math.max(1, barW * 0.8), h };
-  });
-}
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
-export function BarChart({ data, width = 320, height = 120 }: { data: BarDatum[]; width?: number; height?: number }) {
-  const bars = computeBars(data, width, height);
+export const description = "A stacked bar chart with a legend";
+
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 },
+];
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--chart-1)",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "var(--chart-2)",
+  },
+} satisfies ChartConfig;
+
+export function BarChart() {
   return (
-    <svg width={width} height={height} role="img" aria-label="bar chart">
-      {bars.map((b, i) => (
-        <rect key={i} x={b.x} y={b.y} width={b.w} height={b.h} fill="currentColor" opacity={0.85} />
-      ))}
-    </svg>
+    <ChartContainer config={chartConfig}>
+      <RechartsBarChart accessibilityLayer data={chartData}>
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey="month"
+          tickLine={false}
+          tickMargin={10}
+          axisLine={false}
+          tickFormatter={(value) => value.slice(0, 3)}
+        />
+        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+        <ChartLegend content={<ChartLegendContent payload={[]} />} />
+        <Bar dataKey="desktop" stackId="a" fill="var(--color-desktop)" radius={[0, 0, 4, 4]} />
+        <Bar dataKey="mobile" stackId="a" fill="var(--color-mobile)" radius={[4, 4, 0, 0]} />
+      </RechartsBarChart>
+    </ChartContainer>
   );
 }
-

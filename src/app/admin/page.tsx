@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,20 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users,
-  Clock,
   Edit,
   Trash2,
   RefreshCw,
-  Plus,
   AlertTriangle,
   CheckCircle,
-  Eye,
-  Check,
+  TrendingUp,
 } from "lucide-react";
 
 import { getActiveDoctors, getActiveServices } from "@/lib/storage";
@@ -34,10 +35,6 @@ import { formatMinutesCompact, formatTimeHM } from "@/lib/time";
 import { LineChart } from "@/components/charts/LineChart";
 import { AreaChart } from "@/components/charts/AreaChart";
 import { BarChart } from "@/components/charts/BarChart";
-import { PieChart } from "@/components/charts/PieChart";
-import { countsByDate } from "@/lib/analytics";
-import { getJSON } from "@/lib/storage";
-import { LS_KEYS } from "@/lib/constants";
 
 type QueueItem = {
   token: string;
@@ -274,22 +271,16 @@ export default function AdminDashboard() {
             <CardDescription>최근 30일 등록 수</CardDescription>
           </CardHeader>
           <CardContent>
-            {(() => {
-              // 넉넉한 더미 데이터 (30포인트)
-              const patients = getJSON<{ lastVisit: string }[]>(LS_KEYS.patients) || [];
-              const today = new Date();
-              const dates: string[] = [];
-              for (let i = 29; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(today.getDate() - i);
-                dates.push(d.toISOString().split("T")[0]);
-              }
-              const base = countsByDate(dates, 30);
-              const withCounts = base.map((b, i) => ({ ...b, count: (i * 3 + (i % 5) * 2) % 20 + 5 }));
-              const points = withCounts.map((d, i) => ({ x: i, y: d.count }));
-              return <LineChart points={points} />;
-            })()}
+            <LineChart />
           </CardContent>
+          <CardFooter className="flex-col items-start gap-2 text-sm">
+            <div className="flex gap-2 leading-none font-medium">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="text-muted-foreground leading-none">
+              Showing total visitors for the last 6 months
+            </div>
+          </CardFooter>
         </Card>
 
         {/* 에어리어 차트 */}
@@ -299,11 +290,20 @@ export default function AdminDashboard() {
             <CardDescription>평균 대기시간 가상의 수치</CardDescription>
           </CardHeader>
           <CardContent>
-            {(() => {
-              const points = Array.from({ length: 30 }, (_, i) => ({ x: i, y: Math.max(5, (Math.sin(i / 4) + 1) * 10) }));
-              return <AreaChart points={points} />;
-            })()}
+            <AreaChart />
           </CardContent>
+          <CardFooter>
+            <div className="flex w-full items-start gap-2 text-sm">
+              <div className="grid gap-2">
+                <div className="flex items-center gap-2 leading-none font-medium">
+                  Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+                </div>
+                <div className="text-muted-foreground flex items-center gap-2 leading-none">
+                  January - June 2024
+                </div>
+              </div>
+            </div>
+          </CardFooter>
         </Card>
 
         {/* 바 차트 */}
@@ -313,12 +313,16 @@ export default function AdminDashboard() {
             <CardDescription>09~18시</CardDescription>
           </CardHeader>
           <CardContent>
-            {(() => {
-              const hours = Array.from({ length: 10 }, (_, i) => 9 + i);
-              const data = hours.map((h, i) => ({ x: h, y: (i * 7) % 13 + 5 }));
-              return <BarChart data={data} />;
-            })()}
+            <BarChart />
           </CardContent>
+          <CardFooter className="flex-col items-start gap-2 text-sm">
+            <div className="flex gap-2 leading-none font-medium">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="text-muted-foreground leading-none">
+              Showing total visitors for the last 6 months
+            </div>
+          </CardFooter>
         </Card>
 
         {/* 파이 차트 */}
@@ -328,16 +332,16 @@ export default function AdminDashboard() {
             <CardDescription>일반/재진/검사/처방</CardDescription>
           </CardHeader>
           <CardContent>
-            {(() => {
-              const data = [
-                { label: "일반", value: 40 },
-                { label: "재진", value: 25 },
-                { label: "검사", value: 20 },
-                { label: "처방", value: 15 },
-              ];
-              return <PieChart data={data} />;
-            })()}
+            <BarChart />
           </CardContent>
+          <CardFooter className="flex-col items-start gap-2 text-sm">
+            <div className="flex gap-2 leading-none font-medium">
+              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="text-muted-foreground leading-none">
+              Showing total visitors for the last 6 months
+            </div>
+          </CardFooter>
         </Card>
       </div>
       {/* 통계 카드 */}

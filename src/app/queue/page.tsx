@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Bell, Smartphone, RefreshCw, Info, ClipboardList, User2 } from "lucide-react";
+import { Bell, Smartphone, RefreshCw, Info, ClipboardList } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useQueue, type QueueState } from "@/lib/useQueue";

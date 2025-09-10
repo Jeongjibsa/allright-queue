@@ -7,18 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Users,
-  UserPlus,
-  FileText,
-  Clock,
-  Plus,
-  Edit,
-  Trash2,
-  Save,
-  X,
-  AlertTriangle,
-} from "lucide-react";
+import { Users, UserPlus, FileText, Plus, Edit, Trash2, Save, X, AlertTriangle } from "lucide-react";
 import { Collapse } from "@/components/ui/collapse";
 import { ensureDefaultPatients, getJSON, setJSON } from "@/lib/storage";
 import { LS_KEYS } from "@/lib/constants";

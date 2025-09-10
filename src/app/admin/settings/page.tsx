@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Bell, Shield, Database, Palette } from "lucide-react";
+import { Settings, Bell, Database, Palette } from "lucide-react";
 import { useThemePreset } from "@/app/providers";
 
 export default function SettingsPage() {

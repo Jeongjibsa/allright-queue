@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { applyPreset, getPreset, setPreset } from "@/lib/tweakcn";
+import { applyPreset, getPreset, setPreset, ALL_PRESETS } from "@/lib/tweakcn";
 
 describe("tweakcn theme presets", () => {
-  it("stores and applies preset", () => {
-    setPreset("clinic");
-    expect(getPreset()).toBe("clinic");
-    applyPreset("clinic");
-    expect(document.documentElement.dataset.theme).toBe("clinic");
+  it("stores and applies all presets", () => {
+    for (const preset of ALL_PRESETS) {
+      setPreset(preset);
+      expect(getPreset()).toBe(preset);
+      applyPreset(preset);
+      expect(document.documentElement.dataset.theme).toBe(preset);
+    }
   });
 });
-

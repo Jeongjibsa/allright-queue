@@ -17,18 +17,20 @@ import { Separator } from "@/components/ui/separator";
 import { ClipboardList, User2, Clock, CheckCircle, Copy, ExternalLink } from "lucide-react";
 import { useCreateQueue } from "@/lib/useQueue";
 import { getActiveDoctors, getActiveServices } from "@/lib/storage";
+import { getRegisterPrefill } from "@/lib/devDefaults";
 
 // 서비스/의료진 옵션은 storage 헬퍼를 통해 로드합니다.
 
 export default function RegisterPage() {
   const [serviceOptions, setServiceOptions] = useState(getActiveServices());
   const [doctorOptions, setDoctorOptions] = useState<{ value: string; label: string }[]>([]);
+  const prefill = getRegisterPrefill();
   const [formData, setFormData] = useState({
-    name: "",
-    age: "",
-    service: "",
-    room: "",
-    doctor: "",
+    name: prefill?.name ?? "",
+    age: prefill?.age ?? "",
+    service: prefill?.service ?? "",
+    room: prefill?.room ?? "",
+    doctor: prefill?.doctor ?? "",
   });
 
   const [successData, setSuccessData] = useState<{

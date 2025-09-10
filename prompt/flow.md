@@ -21,16 +21,19 @@ This document defines the standard automated flow for code changes and PRs. It t
 - Push to remote (feature branch or `v2`).
 
 ## Pull Request
-- Base: `main`. Head: `v2` (or your `feat/*` branched from `v2`).
+- Feature PRs: base `v2` (Head: your `feat/*` branch from `v2`).
 - Title example: `refactor(v2): TS/Next.js conventions, shared types/constants/helpers [gen by codex]`.
 - Body: use the repo PR template or a Markdown file (no escaped newlines).
   - Prefer `--fill` to use `.github/PULL_REQUEST_TEMPLATE.md`.
   - Or use `--body-file <path/to/body.md>` to pass a multi-line body.
 - Label: add `auto-generated`. If labels are unavailable, include `[gen by codex]` in the title.
 - Commands (choose one):
-  - `gh pr create --base main --head v2 --title "<TITLE>" --fill --label "auto-generated"`
-  - `gh pr create --base main --head v2 --title "<TITLE>" --body-file prompt/pr_body.md --label "auto-generated"`
+  - `gh pr create --base v2 --head feat/<name> --title "<TITLE>" --fill --label "auto-generated"`
+  - `gh pr create --base v2 --head feat/<name> --title "<TITLE>" --body-file prompt/pr_body.md --label "auto-generated"`
   - Requires `gh auth login` or `GH_TOKEN`.
+
+### Release PR
+- When v2 is ready to ship: open a PR from `v2` to `main` with the same rules and enable auto-merge (squash).
 
 ## Safety
 - No destructive operations (deletes, resets) without explicit request.

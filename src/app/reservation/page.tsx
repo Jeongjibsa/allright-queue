@@ -19,18 +19,20 @@ import { useCreateReservation } from "@/lib/useReservation";
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
+import { getReservationPrefill } from "@/lib/devDefaults";
 import { DEFAULT_SERVICE_OPTIONS } from "@/lib/constants";
 
 // 서비스 옵션은 공통 상수를 사용합니다.
 
 export default function ReservationPage() {
   const [serviceOptions] = useState(DEFAULT_SERVICE_OPTIONS);
+  const prefill = getReservationPrefill();
   const [formData, setFormData] = useState({
-    name: "",
-    patientId: "",
-    phone: "",
-    service: "",
-    date: "",
+    name: prefill?.name ?? "",
+    patientId: prefill?.patientId ?? "",
+    phone: prefill?.phone ?? "",
+    service: prefill?.service ?? "",
+    date: prefill?.date ?? "",
   });
 
   const [hasHistory, setHasHistory] = useState<boolean | null>(null);

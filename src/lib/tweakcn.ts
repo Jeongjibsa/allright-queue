@@ -1,4 +1,10 @@
-export type ThemePreset = "light" | "dark" | "clinic";
+export type ThemePreset =
+  | "light"
+  | "dark"
+  | "clinic"
+  | "ocean"
+  | "forest"
+  | "sunset";
 
 const LS_KEY = "theme:preset";
 
@@ -23,3 +29,11 @@ export function applyPreset(preset: ThemePreset) {
   }
 }
 
+export const ALL_PRESETS: ThemePreset[] = [
+  "light",
+  "dark",
+  "clinic",
+  "ocean",
+  "forest",
+  "sunset",
+];

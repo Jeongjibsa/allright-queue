@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Bell, Shield, Database, Palette } from "lucide-react";
 import { useThemePreset } from "@/app/providers";
+import { ALL_PRESETS } from "@/lib/tweakcn";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useThemePreset();
@@ -141,8 +142,8 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>테마 프리셋</Label>
-            <div className="flex gap-2">
-              {(["light", "dark", "clinic"] as const).map((preset) => (
+            <div className="flex flex-wrap gap-2">
+              {ALL_PRESETS.map((preset) => (
                 <Button
                   key={preset}
                   size="sm"

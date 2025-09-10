@@ -120,6 +120,24 @@
   --ring: oklch(0.7 0.12 230);
 }
 
+:root[data-theme="ocean"] {
+  --primary: oklch(0.6 0.12 240);
+  --accent: oklch(0.8 0.08 235);
+  --ring: oklch(0.6 0.12 240);
+}
+
+:root[data-theme="forest"] {
+  --primary: oklch(0.55 0.14 150);
+  --accent: oklch(0.75 0.1 150);
+  --ring: oklch(0.55 0.14 150);
+}
+
+:root[data-theme="sunset"] {
+  --primary: oklch(0.65 0.2 30);
+  --accent: oklch(0.8 0.15 50);
+  --ring: oklch(0.65 0.2 30);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

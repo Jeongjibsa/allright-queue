@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { LayoutDashboard, Stethoscope, Users, Settings, Menu, X, Contact, Calendar } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const sidebarItems = [
   {
@@ -116,7 +117,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center space-x-4">
             <h1 className="text-lg font-semibold">관리자 대시보드</h1>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle inline />
             <Link href="/">
               <Button variant="outline" size="sm">
                 메인으로

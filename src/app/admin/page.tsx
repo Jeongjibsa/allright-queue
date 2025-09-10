@@ -32,6 +32,9 @@ import {
 import { getActiveDoctors, getActiveServices } from "@/lib/storage";
 import { formatMinutesCompact, formatTimeHM } from "@/lib/time";
 import { LineChart } from "@/components/charts/LineChart";
+import { AreaChart } from "@/components/charts/AreaChart";
+import { BarChart } from "@/components/charts/BarChart";
+import { PieChart } from "@/components/charts/PieChart";
 import { countsByDate } from "@/lib/analytics";
 import { getJSON } from "@/lib/storage";
 import { LS_KEYS } from "@/lib/constants";
@@ -262,23 +265,81 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* 트렌드 그래프 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>환자 추세 (7일)</CardTitle>
-          <CardDescription>최근 일주일 간 등록 환자 추세</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {
-            (() => {
+      {/* 차트 샘플 섹션 */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* 라인 차트 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>환자 추세 (30일)</CardTitle>
+            <CardDescription>최근 30일 등록 수</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              // 넉넉한 더미 데이터 (30포인트)
               const patients = getJSON<{ lastVisit: string }[]>(LS_KEYS.patients) || [];
-              const data = countsByDate(patients.map((p) => p.lastVisit));
-              const points = data.map((d, i) => ({ x: i, y: d.count }));
+              const today = new Date();
+              const dates: string[] = [];
+              for (let i = 29; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                dates.push(d.toISOString().split("T")[0]);
+              }
+              const base = countsByDate(dates, 30);
+              const withCounts = base.map((b, i) => ({ ...b, count: (i * 3 + (i % 5) * 2) % 20 + 5 }));
+              const points = withCounts.map((d, i) => ({ x: i, y: d.count }));
               return <LineChart points={points} />;
-            })()
-          }
-        </CardContent>
-      </Card>
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* 에어리어 차트 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>대기 시간 추세 (예시)</CardTitle>
+            <CardDescription>평균 대기시간 가상의 수치</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const points = Array.from({ length: 30 }, (_, i) => ({ x: i, y: Math.max(5, (Math.sin(i / 4) + 1) * 10) }));
+              return <AreaChart points={points} />;
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* 바 차트 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>시간대별 접수 수 (예시)</CardTitle>
+            <CardDescription>09~18시</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const hours = Array.from({ length: 10 }, (_, i) => 9 + i);
+              const data = hours.map((h, i) => ({ x: h, y: (i * 7) % 13 + 5 }));
+              return <BarChart data={data} />;
+            })()}
+          </CardContent>
+        </Card>
+
+        {/* 파이 차트 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>진료 항목 비중 (예시)</CardTitle>
+            <CardDescription>일반/재진/검사/처방</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {(() => {
+              const data = [
+                { label: "일반", value: 40 },
+                { label: "재진", value: 25 },
+                { label: "검사", value: 20 },
+                { label: "처방", value: 15 },
+              ];
+              return <PieChart data={data} />;
+            })()}
+          </CardContent>
+        </Card>
+      </div>
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>

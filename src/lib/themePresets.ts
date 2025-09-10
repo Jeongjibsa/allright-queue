@@ -1,4 +1,4 @@
-export type ThemePreset = "light" | "dark";
+export type ThemePreset = "light" | "dark" | string;
 
 const LS_KEY = "theme:preset";
 

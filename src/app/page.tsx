@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +19,14 @@ export default function HomePage() {
   return (
     <div className="flex min-h-[100dvh] w-full items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-2xl space-y-6">
-        <header className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">올바른정형외과</h1>
-          <p className="text-muted-foreground mt-2 text-lg">대기열 관리 시스템</p>
+        <header className="flex items-center justify-between">
+          <div className="text-center w-full">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">올바른정형외과</h1>
+            <p className="text-muted-foreground mt-2 text-lg">대기열 관리 시스템</p>
+          </div>
+          <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+            <ThemeToggle inline />
+          </div>
         </header>
 
         {/* 내 대기열 찾기 */}

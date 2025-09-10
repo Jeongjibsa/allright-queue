@@ -149,13 +149,6 @@ export default function SettingsPage() {
               onCheckedChange={(v) => setTheme(v ? "dark" : "light")}
             />
           </div>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>컴팩트 모드</Label>
-              <p className="text-muted-foreground text-sm">더 조밀한 레이아웃을 사용합니다.</p>
-            </div>
-            <Switch />
-          </div>
         </CardContent>
       </Card>
 

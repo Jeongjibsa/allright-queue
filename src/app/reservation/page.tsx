@@ -15,6 +15,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Calendar as CalendarIcon, CheckCircle, AlertCircle } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useCreateReservation } from "@/lib/useReservation";
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -127,9 +128,12 @@ export default function ReservationPage() {
   return (
     <div className="flex min-h-[100dvh] w-full items-start justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-md space-y-4">
-        <header className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">예약 등록</h1>
-          <p className="text-muted-foreground mt-2">기존 환자의 진료 예약을 등록하세요</p>
+        <header className="flex items-center justify-between">
+          <div className="text-center w-full">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">예약 등록</h1>
+            <p className="text-muted-foreground mt-2">기존 환자의 진료 예약을 등록하세요</p>
+          </div>
+          <ThemeToggle inline />
         </header>
 
         {!successData ? (

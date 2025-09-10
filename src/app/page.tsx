@@ -1,11 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ClipboardList, Users, Settings, Calendar } from "lucide-react";
 
 export default function HomePage() {
+  const [token, setToken] = useState("");
+
+  const openQueue = () => {
+    if (!token) return alert("대기열 토큰을 입력하세요.");
+    const url = `/queue?token=${encodeURIComponent(token.trim())}`;
+    window.open(url, "_blank");
+  };
   return (
     <div className="flex min-h-[100dvh] w-full items-center justify-center bg-gradient-to-b from-white to-slate-50 px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-2xl space-y-6">
@@ -13,6 +22,30 @@ export default function HomePage() {
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">올바른정형외과</h1>
           <p className="text-muted-foreground mt-2 text-lg">대기열 관리 시스템</p>
         </header>
+
+        {/* 내 대기열 찾기 */}
+        <Card className="rounded-2xl shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" /> 내 대기열 찾기
+            </CardTitle>
+            <CardDescription>발급받은 토큰으로 내 대기 현황을 확인하세요.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                placeholder="예: Q-ABCDEFG-123456"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                className="rounded-xl"
+                aria-label="대기열 토큰"
+              />
+              <Button className="rounded-xl" onClick={openQueue}>
+                조회
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
           {/* 환자 접수 */}

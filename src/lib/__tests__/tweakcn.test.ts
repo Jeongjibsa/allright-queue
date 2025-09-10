@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyPreset, getPreset, setPreset, ALL_PRESETS } from "@/lib/tweakcn";
+import { applyPreset, getPreset, setPreset, ALL_PRESETS } from "@/lib/themePresets";
 
 describe("tweakcn theme presets", () => {
   it("stores and applies all presets", () => {

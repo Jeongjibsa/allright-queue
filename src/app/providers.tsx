@@ -2,7 +2,7 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, createContext, useContext } from "react";
-import { applyPreset, getPreset, setPreset, type ThemePreset } from "@/lib/tweakcn";
+import { applyPreset, getPreset, setPreset, type ThemePreset } from "@/lib/themePresets";
 
 const queryClient = new QueryClient({
   defaultOptions: {

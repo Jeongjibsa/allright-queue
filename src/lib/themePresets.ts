@@ -1,10 +1,4 @@
-export type ThemePreset =
-  | "light"
-  | "dark"
-  | "clinic"
-  | "ocean"
-  | "forest"
-  | "sunset";
+export type ThemePreset = "light" | "dark";
 
 const LS_KEY = "theme:preset";
 
@@ -73,12 +67,4 @@ export const TWEAKCN_PRESETS = [
   "violet-bloom",
 ] as const;
 
-export const ALL_PRESETS: string[] = [
-  "light",
-  "dark",
-  "clinic",
-  "ocean",
-  "forest",
-  "sunset",
-  ...TWEAKCN_PRESETS,
-];
+export const ALL_PRESETS: string[] = ["light", "dark"];

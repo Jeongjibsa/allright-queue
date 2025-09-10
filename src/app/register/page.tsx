@@ -125,7 +125,7 @@ export default function RegisterPage() {
   const selectedService = serviceOptions.find((option) => option.value === formData.service);
 
   return (
-    <div className="flex min-h-[100dvh] w-full items-start justify-center bg-gradient-to-b from-white to-slate-50 px-4 py-6 sm:px-6 sm:py-8">
+    <div className="flex min-h-[100dvh] w-full items-start justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-md space-y-4">
         <header className="text-center">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">환자 접수</h1>

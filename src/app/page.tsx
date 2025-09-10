@@ -16,7 +16,7 @@ export default function HomePage() {
     window.open(url, "_blank");
   };
   return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-gradient-to-b from-white to-slate-50 px-4 py-6 sm:px-6 sm:py-8">
+    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-2xl space-y-6">
         <header className="text-center">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">올바른정형외과</h1>

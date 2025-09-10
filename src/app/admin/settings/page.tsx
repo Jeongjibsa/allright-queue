@@ -8,7 +8,6 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Settings, Bell, Shield, Database, Palette } from "lucide-react";
 import { useThemePreset } from "@/app/providers";
-import { ALL_PRESETS } from "@/lib/tweakcn";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useThemePreset();
@@ -140,47 +139,15 @@ export default function SettingsPage() {
           <CardDescription>시스템의 외관을 사용자 정의합니다.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>테마 프리셋</Label>
-            <div className="flex flex-wrap gap-2">
-              {ALL_PRESETS.map((preset) => (
-                <Button
-                  key={preset}
-                  size="sm"
-                  variant={theme === preset ? "default" : "outline"}
-                  onClick={() => setTheme(preset)}
-                >
-                  {preset}
-                </Button>
-              ))}
-            </div>
-            <p className="text-muted-foreground text-xs">전역 프리셋을 적용합니다.</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>TweakCN Presets</Label>
-            <div className="flex max-h-48 flex-wrap gap-2 overflow-auto rounded border p-2">
-              {ALL_PRESETS.filter((p) => !["light", "dark", "clinic", "ocean", "forest", "sunset"].includes(p)).map(
-                (preset) => (
-                  <Button
-                    key={preset}
-                    size="sm"
-                    variant={theme === preset ? "default" : "outline"}
-                    onClick={() => setTheme(preset as any)}
-                  >
-                    {preset}
-                  </Button>
-                )
-              )}
-            </div>
-            <p className="text-muted-foreground text-xs">tweakcn.com에서 설치한 프리셋을 포함합니다.</p>
-          </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>다크 모드</Label>
               <p className="text-muted-foreground text-sm">어두운 테마를 사용합니다.</p>
             </div>
-            <Switch checked={theme === "dark"} onCheckedChange={(v) => setTheme(v ? "dark" : "light")} />
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={(v) => setTheme(v ? "dark" : "light")}
+            />
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">

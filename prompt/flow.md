@@ -21,7 +21,7 @@ This document defines the standard automated flow for code changes and PRs. It t
 - Push to remote (feature branch or `v2`).
 
 ## Pull Request
-- Feature PRs: base `v2` (Head: your `feat/*` branch from `v2`).
+- Base: `main`. Head: `v2` (or your `feat/*` branched from `v2`).
 - Title example: `refactor(v2): TS/Next.js conventions, shared types/constants/helpers [gen by codex]`.
 - Body: use the repo PR template or a Markdown file (no escaped newlines).
   - Prefer `--fill` to use `.github/PULL_REQUEST_TEMPLATE.md`.
@@ -34,7 +34,7 @@ This document defines the standard automated flow for code changes and PRs. It t
 
 ### Release PR
 - When v2 is ready to ship: open a PR from `v2` to `main` with the same rules and enable auto-merge (squash).
-
+- 
 ## Safety
 - No destructive operations (deletes, resets) without explicit request.
 - Keep changes scoped; avoid renaming public routes or API paths unless required.

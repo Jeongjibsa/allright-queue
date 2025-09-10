@@ -1,4 +1,4 @@
-import type { ServiceItem, DoctorItem, PatientItem } from "@/types/domain";
+import type { ServiceItem, DoctorItem, PatientItem, ReservationData } from "@/types/domain";
 import { DEFAULT_SERVICE_OPTIONS, LS_KEYS } from "@/lib/constants";
 
 export function getJSON<T>(key: string): T | null {
@@ -84,29 +84,32 @@ export function ensureDefaultDoctors(): void {
   setJSON(LS_KEYS.doctors, defaults);
 }
 
-export function ensureDefaultPatients(): void {
-  const existing = getJSON<PatientItem[]>(LS_KEYS.patients);
+
+export function ensureDefaultReservations(): void {
+  const existing = getJSON<ReservationData[]>(LS_KEYS.reservations);
   if (existing) return;
   const today = new Date().toISOString().split("T")[0];
-  const defaults: PatientItem[] = [
+  const defaults: ReservationData[] = [
     {
-      id: "1",
+      reservationId: "R-20240101-AAAAAA",
       name: "김환자",
-      age: 45,
+      patientId: "P001",
       phone: "010-1111-2222",
-      lastVisit: today,
-      isActive: true,
-      notes: "정형외과 진료",
+      service: "일반진료",
+      date: today,
+      estimatedWaitTime: 10,
+      createdAt: Date.now(),
     },
     {
-      id: "2",
+      reservationId: "R-20240101-BBBBBB",
       name: "이환자",
-      age: 32,
+      patientId: "P002",
       phone: "010-2222-3333",
-      lastVisit: today,
-      isActive: true,
-      notes: "재활치료",
+      service: "재진",
+      date: today,
+      estimatedWaitTime: 5,
+      createdAt: Date.now(),
     },
   ];
-  setJSON(LS_KEYS.patients, defaults);
+  setJSON(LS_KEYS.reservations, defaults);
 }

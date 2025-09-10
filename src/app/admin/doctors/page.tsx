@@ -8,17 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, Trash2, Save, X, AlertTriangle, User, Stethoscope } from "lucide-react";
+import { ensureDefaultDoctors, getJSON, setJSON } from "@/lib/storage";
+import { LS_KEYS } from "@/lib/constants";
+import type { DoctorItem } from "@/types/domain";
 import { Collapse } from "@/components/ui/collapse";
 
-type DoctorItem = {
-  id: string;
-  name: string;
-  specialty: string;
-  room: string;
-  isActive: boolean;
-  phone?: string;
-  email?: string;
-};
+// types imported
 
 export default function DoctorsPage() {
   const [doctors, setDoctors] = useState<DoctorItem[]>([]);
@@ -36,44 +31,9 @@ export default function DoctorsPage() {
   // 의료진 목록 조회
   const fetchDoctors = async () => {
     try {
-      // 로컬 스토리지에서 의료진 데이터 가져오기
-      const storedDoctors = localStorage.getItem("doctors");
-      if (storedDoctors) {
-        setDoctors(JSON.parse(storedDoctors));
-      } else {
-        // 기본 의료진 설정
-        const defaultDoctors: DoctorItem[] = [
-          {
-            id: "1",
-            name: "김의사",
-            specialty: "정형외과",
-            room: "101",
-            isActive: true,
-            phone: "010-1234-5678",
-            email: "kim@allright.com",
-          },
-          {
-            id: "2",
-            name: "이의사",
-            specialty: "정형외과",
-            room: "102",
-            isActive: true,
-            phone: "010-2345-6789",
-            email: "lee@allright.com",
-          },
-          {
-            id: "3",
-            name: "박의사",
-            specialty: "재활의학과",
-            room: "103",
-            isActive: true,
-            phone: "010-3456-7890",
-            email: "park@allright.com",
-          },
-        ];
-        setDoctors(defaultDoctors);
-        localStorage.setItem("doctors", JSON.stringify(defaultDoctors));
-      }
+      ensureDefaultDoctors();
+      const list = getJSON<DoctorItem[]>(LS_KEYS.doctors) || [];
+      setDoctors(list);
     } catch (error) {
       console.error("의료진 조회 실패:", error);
     } finally {
@@ -83,7 +43,7 @@ export default function DoctorsPage() {
 
   // 의료진 저장
   const saveDoctors = (newDoctors: DoctorItem[]) => {
-    localStorage.setItem("doctors", JSON.stringify(newDoctors));
+    setJSON(LS_KEYS.doctors, newDoctors);
     setDoctors(newDoctors);
   };
 

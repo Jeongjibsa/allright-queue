@@ -20,16 +20,11 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Collapse } from "@/components/ui/collapse";
+import { ensureDefaultPatients, getJSON, setJSON } from "@/lib/storage";
+import { LS_KEYS } from "@/lib/constants";
+import type { PatientItem } from "@/types/domain";
 
-type PatientItem = {
-  id: string;
-  name: string;
-  age: number;
-  phone: string;
-  lastVisit: string;
-  isActive: boolean;
-  notes?: string;
-};
+// types imported
 
 export default function PatientsPage() {
   const [patients, setPatients] = useState<PatientItem[]>([]);
@@ -46,34 +41,9 @@ export default function PatientsPage() {
   // 환자 목록 조회
   const fetchPatients = async () => {
     try {
-      const storedPatients = localStorage.getItem("patients");
-      if (storedPatients) {
-        setPatients(JSON.parse(storedPatients));
-      } else {
-        // 기본 환자 데이터 설정
-        const defaultPatients: PatientItem[] = [
-          {
-            id: "1",
-            name: "김환자",
-            age: 45,
-            phone: "010-1111-2222",
-            lastVisit: "2024-01-15",
-            isActive: true,
-            notes: "정형외과 진료",
-          },
-          {
-            id: "2",
-            name: "이환자",
-            age: 32,
-            phone: "010-2222-3333",
-            lastVisit: "2024-01-10",
-            isActive: true,
-            notes: "재활치료",
-          },
-        ];
-        setPatients(defaultPatients);
-        localStorage.setItem("patients", JSON.stringify(defaultPatients));
-      }
+      ensureDefaultPatients();
+      const list = getJSON<PatientItem[]>(LS_KEYS.patients) || [];
+      setPatients(list);
     } catch (error) {
       console.error("환자 조회 실패:", error);
     } finally {
@@ -83,7 +53,7 @@ export default function PatientsPage() {
 
   // 환자 저장
   const savePatients = (newPatients: PatientItem[]) => {
-    localStorage.setItem("patients", JSON.stringify(newPatients));
+    setJSON(LS_KEYS.patients, newPatients);
     setPatients(newPatients);
   };
 

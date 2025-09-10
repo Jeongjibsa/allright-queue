@@ -19,14 +19,9 @@ import { useCreateReservation } from "@/lib/useReservation";
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
+import { DEFAULT_SERVICE_OPTIONS } from "@/lib/constants";
 
-// 진료 항목 목록 (기본값)
-const DEFAULT_SERVICE_OPTIONS = [
-  { value: "일반진료", label: "일반진료", waitTime: 10 },
-  { value: "재진", label: "재진", waitTime: 5 },
-  { value: "검사", label: "검사", waitTime: 15 },
-  { value: "처방", label: "처방", waitTime: 3 },
-];
+// 서비스 옵션은 공통 상수를 사용합니다.
 
 export default function ReservationPage() {
   const [serviceOptions] = useState(DEFAULT_SERVICE_OPTIONS);

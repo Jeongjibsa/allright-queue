@@ -1,17 +1,7 @@
 // lib/useReservation.ts
 "use client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-
-export type ReservationData = {
-  reservationId: string;
-  name: string;
-  patientId: string;
-  phone: string;
-  service: string;
-  date: string;
-  estimatedWaitTime: number;
-  createdAt: number;
-};
+import type { ReservationData } from "@/types/domain";
 
 export type VisitHistoryCheck = {
   patientId: string;

@@ -1,27 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { QueueData } from "@/types/queue";
+import { SERVICE_WAIT_TIMES } from "@/lib/constants";
 
-// 임시 데이터 저장소 (실제로는 데이터베이스 사용)
+// 임시 데이터 저장소 (실제로는 Redis/DB 사용 예정)
 const queueData = new Map<string, QueueData>();
-
-export type QueueData = {
-  token: string;
-  name: string;
-  age: number;
-  service: string;
-  room?: string;
-  doctor?: string;
-  estimatedWaitTime: number; // 분 단위
-  createdAt: number;
-  updatedAt: number;
-};
-
-// 진료 항목별 기본 대기 시간 (분)
-const SERVICE_WAIT_TIMES: Record<string, number> = {
-  일반진료: 10,
-  재진: 5,
-  검사: 15,
-  처방: 3,
-};
 
 // GET: 대기열 상태 조회
 export async function GET(request: NextRequest) {

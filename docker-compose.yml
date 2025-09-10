@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  web:
+    image: node:22-alpine
+    container_name: allright-web
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+    command: sh -lc "corepack enable && pnpm install && pnpm dev"
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - app
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: allright-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - app
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: allright-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    env_file:
+      - .env.docker
+    networks:
+      - app
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+networks:
+  app:
+    driver: bridge
+# Production tip:
+#   Replace the web command with:
+#   command: sh -lc "corepack enable && pnpm install --frozen-lockfile && pnpm build && pnpm start"

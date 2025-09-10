@@ -8,15 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Edit, Trash2, Save, X, AlertTriangle } from "lucide-react";
+import { ensureDefaultServices, getJSON, setJSON } from "@/lib/storage";
+import { LS_KEYS } from "@/lib/constants";
+import type { ServiceItem } from "@/types/domain";
 import { Collapse } from "@/components/ui/collapse";
 
-type ServiceItem = {
-  id: string;
-  value: string;
-  label: string;
-  waitTime: number;
-  isActive: boolean;
-};
+// types imported
 
 export default function ServicesPage() {
   const [services, setServices] = useState<ServiceItem[]>([]);
@@ -32,21 +29,9 @@ export default function ServicesPage() {
   // 진료항목 목록 조회
   const fetchServices = async () => {
     try {
-      // 로컬 스토리지에서 진료항목 데이터 가져오기
-      const storedServices = localStorage.getItem("services");
-      if (storedServices) {
-        setServices(JSON.parse(storedServices));
-      } else {
-        // 기본 진료항목 설정
-        const defaultServices: ServiceItem[] = [
-          { id: "1", value: "일반진료", label: "일반진료", waitTime: 10, isActive: true },
-          { id: "2", value: "재진", label: "재진", waitTime: 5, isActive: true },
-          { id: "3", value: "검사", label: "검사", waitTime: 15, isActive: true },
-          { id: "4", value: "처방", label: "처방", waitTime: 3, isActive: true },
-        ];
-        setServices(defaultServices);
-        localStorage.setItem("services", JSON.stringify(defaultServices));
-      }
+      ensureDefaultServices();
+      const list = getJSON<ServiceItem[]>(LS_KEYS.services) || [];
+      setServices(list);
     } catch (error) {
       console.error("진료항목 조회 실패:", error);
     } finally {
@@ -56,7 +41,7 @@ export default function ServicesPage() {
 
   // 진료항목 저장
   const saveServices = (newServices: ServiceItem[]) => {
-    localStorage.setItem("services", JSON.stringify(newServices));
+    setJSON(LS_KEYS.services, newServices);
     setServices(newServices);
   };
 

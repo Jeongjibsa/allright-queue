@@ -1,19 +1,8 @@
 // lib/useQueue.ts
 "use client";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-
-export type QueueState = {
-  token: string;
-  name: string;
-  age: number;
-  service: string;
-  room?: string;
-  doctor?: string;
-  eta: number; // 남은 대기 시간 (분)
-  estimatedWaitTime: number; // 예상 대기 시간 (분)
-  createdAt: number;
-  updatedAt: number;
-};
+import type { QueueState } from "@/types/queue";
+export type { QueueState } from "@/types/queue";
 
 export function useQueue(token: string) {
   return useQuery<QueueState>({

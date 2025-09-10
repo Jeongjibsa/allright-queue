@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,18 +16,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { ClipboardList, User2, Clock, CheckCircle, Copy, ExternalLink } from "lucide-react";
 import { useCreateQueue } from "@/lib/useQueue";
-import { useEffect } from "react";
+import { getActiveDoctors, getActiveServices } from "@/lib/storage";
 
-// 진료 항목 목록 (기본값)
-const DEFAULT_SERVICE_OPTIONS = [
-  { value: "일반진료", label: "일반진료", waitTime: 10 },
-  { value: "재진", label: "재진", waitTime: 5 },
-  { value: "검사", label: "검사", waitTime: 15 },
-  { value: "처방", label: "처방", waitTime: 3 },
-];
+// 서비스/의료진 옵션은 storage 헬퍼를 통해 로드합니다.
 
 export default function RegisterPage() {
-  const [serviceOptions, setServiceOptions] = useState(DEFAULT_SERVICE_OPTIONS);
+  const [serviceOptions, setServiceOptions] = useState(getActiveServices());
   const [doctorOptions, setDoctorOptions] = useState<{ value: string; label: string }[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -47,40 +41,18 @@ export default function RegisterPage() {
 
   const createQueueMutation = useCreateQueue();
 
-  // 진료항목 목록 조회
+  // 옵션 로더
   const fetchServices = () => {
     try {
-      const storedServices = localStorage.getItem("services");
-      if (storedServices) {
-        const services = JSON.parse(storedServices);
-        const activeServices = services
-          .filter((service: any) => service.isActive)
-          .map((service: any) => ({
-            value: service.value,
-            label: service.label,
-            waitTime: service.waitTime,
-          }));
-        setServiceOptions(activeServices);
-      }
+      setServiceOptions(getActiveServices());
     } catch (error) {
       console.error("진료항목 조회 실패:", error);
     }
   };
 
-  // 의료진 목록 조회
   const fetchDoctors = () => {
     try {
-      const storedDoctors = localStorage.getItem("doctors");
-      if (storedDoctors) {
-        const doctors = JSON.parse(storedDoctors);
-        const activeDoctors = doctors
-          .filter((doctor: any) => doctor.isActive)
-          .map((doctor: any) => ({
-            value: doctor.name,
-            label: `${doctor.name} (${doctor.specialty} - ${doctor.room}호)`,
-          }));
-        setDoctorOptions(activeDoctors);
-      }
+      setDoctorOptions(getActiveDoctors());
     } catch (error) {
       console.error("의료진 조회 실패:", error);
     }
@@ -236,13 +208,17 @@ export default function RegisterPage() {
                         );
                         if (selectedDoctor) {
                           const doctorName = selectedDoctor.value;
-                          const storedDoctors = localStorage.getItem("doctors");
-                          if (storedDoctors) {
-                            const doctors = JSON.parse(storedDoctors);
-                            const doctor = doctors.find((d: any) => d.name === doctorName);
-                            if (doctor) {
-                              setFormData((prev) => ({ ...prev, room: doctor.room }));
+                          try {
+                            const stored = window.localStorage.getItem("doctors");
+                            if (stored) {
+                              const doctors: { name: string; room: string }[] = JSON.parse(stored);
+                              const doctor = doctors.find((d) => d.name === doctorName);
+                              if (doctor) {
+                                setFormData((prev) => ({ ...prev, room: doctor.room }));
+                              }
                             }
+                          } catch (e) {
+                            console.error("의료진 조회 실패:", e);
                           }
                         }
                       }}

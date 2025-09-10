@@ -29,13 +29,8 @@ import {
   Check,
 } from "lucide-react";
 
-// 진료 항목 목록 (기본값)
-const DEFAULT_SERVICE_OPTIONS = [
-  { value: "일반진료", label: "일반진료", waitTime: 10 },
-  { value: "재진", label: "재진", waitTime: 5 },
-  { value: "검사", label: "검사", waitTime: 15 },
-  { value: "처방", label: "처방", waitTime: 3 },
-];
+import { getActiveDoctors, getActiveServices } from "@/lib/storage";
+import { formatMinutesCompact, formatTimeHM } from "@/lib/time";
 
 type QueueItem = {
   token: string;
@@ -57,9 +52,18 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [editingQueue, setEditingQueue] = useState<QueueItem | null>(null);
-  const [serviceOptions, setServiceOptions] = useState(DEFAULT_SERVICE_OPTIONS);
+  const [serviceOptions, setServiceOptions] = useState(getActiveServices());
   const [doctorOptions, setDoctorOptions] = useState<{ value: string; label: string }[]>([]);
-  const [editForm, setEditForm] = useState({
+  type EditForm = {
+    name: string;
+    age: string;
+    service: string;
+    room: string;
+    doctor: string;
+    estimatedWaitTime: string;
+  };
+
+  const [editForm, setEditForm] = useState<EditForm>({
     name: "",
     age: "",
     service: "",
@@ -71,18 +75,7 @@ export default function AdminDashboard() {
   // 진료항목 목록 조회
   const fetchServices = () => {
     try {
-      const storedServices = localStorage.getItem("services");
-      if (storedServices) {
-        const services = JSON.parse(storedServices);
-        const activeServices = services
-          .filter((service: any) => service.isActive)
-          .map((service: any) => ({
-            value: service.value,
-            label: service.label,
-            waitTime: service.waitTime,
-          }));
-        setServiceOptions(activeServices);
-      }
+      setServiceOptions(getActiveServices());
     } catch (error) {
       console.error("진료항목 조회 실패:", error);
     }
@@ -91,17 +84,7 @@ export default function AdminDashboard() {
   // 의료진 목록 조회
   const fetchDoctors = () => {
     try {
-      const storedDoctors = localStorage.getItem("doctors");
-      if (storedDoctors) {
-        const doctors = JSON.parse(storedDoctors);
-        const activeDoctors = doctors
-          .filter((doctor: any) => doctor.isActive)
-          .map((doctor: any) => ({
-            value: doctor.name,
-            label: `${doctor.name} (${doctor.specialty} - ${doctor.room}호)`,
-          }));
-        setDoctorOptions(activeDoctors);
-      }
+      setDoctorOptions(getActiveDoctors());
     } catch (error) {
       console.error("의료진 조회 실패:", error);
     }
@@ -134,7 +117,7 @@ export default function AdminDashboard() {
   };
 
   // 대기열 업데이트
-  const updateQueue = async (token: string, data: any) => {
+  const updateQueue = async (token: string, data: EditForm) => {
     try {
       const response = await fetch("/api/queue", {
         method: "PUT",
@@ -259,20 +242,8 @@ export default function AdminDashboard() {
   ).length;
   const completedQueues = queues.filter((q) => q.remainingWaitTime <= 0).length;
 
-  const formatTime = (minutes: number) => {
-    if (minutes <= 0) return "완료";
-    if (minutes < 60) return `${minutes}분`;
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}시간 ${m}분`;
-  };
-
-  const formatCreatedTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatTime = formatMinutesCompact;
+  const formatCreatedTime = formatTimeHM;
 
   if (loading) {
     return (
@@ -456,10 +427,9 @@ export default function AdminDashboard() {
                                     const doctorName = selectedDoctor.value;
                                     const storedDoctors = localStorage.getItem("doctors");
                                     if (storedDoctors) {
-                                      const doctors = JSON.parse(storedDoctors);
-                                      const doctor = doctors.find(
-                                        (d: any) => d.name === doctorName
-                                      );
+                                      const doctors: { name: string; room: string }[] =
+                                        JSON.parse(storedDoctors);
+                                      const doctor = doctors.find((d) => d.name === doctorName);
                                       if (doctor) {
                                         setEditForm((prev) => ({ ...prev, room: doctor.room }));
                                       }

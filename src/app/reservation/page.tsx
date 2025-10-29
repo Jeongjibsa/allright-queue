@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,17 +16,26 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Calendar as CalendarIcon, CheckCircle, AlertCircle, Copy, Share2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useCreateReservation } from "@/lib/useReservation";
+import {
+  buildReservationMessage,
+  calculateSlotUsage,
+  getReservationLimits,
+  getReservationsByDate,
+  ReservationLimitError,
+  useCreateReservation,
+} from "@/lib/useReservation";
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { getReservationPrefill } from "@/lib/devDefaults";
 import { DEFAULT_SERVICE_OPTIONS, RESERVATION_TIME_SLOTS } from "@/lib/constants";
+import type { ReservationData } from "@/types/domain";
 
 // 서비스 옵션은 공통 상수를 사용합니다.
 
 export default function ReservationPage() {
   const [serviceOptions] = useState(DEFAULT_SERVICE_OPTIONS);
+  const limits = useMemo(() => getReservationLimits(), []);
   const prefill = getReservationPrefill();
   const [formData, setFormData] = useState({
     name: prefill?.name ?? "",
@@ -38,16 +47,25 @@ export default function ReservationPage() {
   });
 
   const [hasHistory, setHasHistory] = useState<boolean | null>(null);
-  const [successData, setSuccessData] = useState<{
-    reservationId: string;
-    name: string;
-    service: string;
-    estimatedWaitTime: number;
-    date: string;
-    timeSlot: string;
-  } | null>(null);
+  const [successData, setSuccessData] = useState<ReservationData | null>(null);
+  const [slotUsage, setSlotUsage] = useState<Record<string, number>>({});
+  const [dailyCount, setDailyCount] = useState(0);
 
   const createReservationMutation = useCreateReservation();
+  const refreshSlotUsage = useCallback(() => {
+    if (!formData.date) {
+      setSlotUsage({});
+      setDailyCount(0);
+      return;
+    }
+    const reservationsForDay = getReservationsByDate(formData.date);
+    setSlotUsage(calculateSlotUsage(reservationsForDay));
+    setDailyCount(reservationsForDay.length);
+  }, [formData.date]);
+
+  useEffect(() => {
+    refreshSlotUsage();
+  }, [refreshSlotUsage, successData]);
 
   // 기존 방문 이력 확인
   const checkVisitHistory = async () => {
@@ -106,14 +124,7 @@ export default function ReservationPage() {
         timeSlot: formData.timeSlot,
       });
 
-      setSuccessData({
-        reservationId: result.reservationId,
-        name: result.name,
-        service: result.service,
-        estimatedWaitTime: result.estimatedWaitTime,
-        date: result.date,
-        timeSlot: result.timeSlot,
-      });
+      setSuccessData(result);
 
       // 폼 초기화
       setFormData({
@@ -126,23 +137,47 @@ export default function ReservationPage() {
       });
       setHasHistory(null);
     } catch (error) {
+      if (error instanceof ReservationLimitError) {
+        alert(error.message);
+        refreshSlotUsage();
+        return;
+      }
       console.error("예약 실패:", error);
       alert("예약 중 오류가 발생했습니다. 다시 시도해주세요.");
+      refreshSlotUsage();
     }
   };
 
   const handleSelectTimeSlot = (slot: string) => {
+    const usage = slotUsage[slot] ?? 0;
+    const dailyLimitReached = formData.date ? dailyCount >= limits.perDay : false;
+    if (dailyLimitReached || usage >= limits.perSlot) {
+      alert("선택한 시간대는 예약이 마감되었습니다.");
+      return;
+    }
     setFormData((prev) => ({ ...prev, timeSlot: slot }));
   };
 
-  const successSummary = successData
-    ? `예약 확인\n환자명: ${successData.name}\n진료항목: ${successData.service}\n예약일시: ${successData.date} ${successData.timeSlot}\n예약번호: ${successData.reservationId}`
-    : "";
+  const clipboardMessage = useMemo(
+    () =>
+      successData
+        ? buildReservationMessage(successData, { channel: "clipboard" })
+        : null,
+    [successData]
+  );
+
+  const shareMessage = useMemo(
+    () =>
+      successData
+        ? buildReservationMessage(successData, { channel: "sms" })
+        : null,
+    [successData]
+  );
 
   const handleCopySummary = async () => {
-    if (!successData) return;
+    if (!clipboardMessage) return;
     try {
-      await navigator.clipboard.writeText(successSummary);
+      await navigator.clipboard.writeText(clipboardMessage.body);
       alert("예약 정보가 복사되었습니다.");
     } catch (error) {
       console.error("예약 정보 복사 실패:", error);
@@ -151,20 +186,28 @@ export default function ReservationPage() {
   };
 
   const handleShareSummary = async () => {
-    if (!successData) return;
+    if (!shareMessage) return;
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "올바른정형외과 예약 안내",
-          text: successSummary,
+          title: shareMessage.title,
+          text: shareMessage.body,
         });
         return;
       } catch (error) {
         console.error("예약 정보 공유 실패:", error);
       }
     }
-    await handleCopySummary();
+    try {
+      await navigator.clipboard.writeText(shareMessage.body);
+      alert("예약 정보가 복사되었습니다.");
+    } catch (error) {
+      console.error("예약 정보 공유 실패:", error);
+      alert("공유가 지원되지 않아 예약 정보를 복사했습니다. 다시 시도해주세요.");
+    }
   };
+
+  const dailyLimitReached = formData.date ? dailyCount >= limits.perDay : false;
 
   return (
     <div className="flex min-h-[100dvh] w-full items-start justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
@@ -294,6 +337,8 @@ export default function ReservationPage() {
                   <div className="grid grid-cols-3 gap-2">
                     {RESERVATION_TIME_SLOTS.map((slot) => {
                       const selected = formData.timeSlot === slot.value;
+                      const usage = slotUsage[slot.value] ?? 0;
+                      const slotFull = usage >= limits.perSlot || dailyLimitReached;
                       return (
                         <Button
                           key={slot.value}
@@ -301,13 +346,29 @@ export default function ReservationPage() {
                           variant={selected ? "default" : "outline"}
                           onClick={() => handleSelectTimeSlot(slot.value)}
                           aria-pressed={selected}
-                          className="justify-center"
+                          className="flex flex-col items-center justify-center py-3"
+                          disabled={slotFull}
                         >
-                          {slot.label}
+                          <span>{slot.label}</span>
+                          <span className="text-[0.7rem] text-muted-foreground">
+                            {usage}/{limits.perSlot}
+                          </span>
                         </Button>
                       );
                     })}
                   </div>
+                  <p className="text-muted-foreground text-xs">
+                    시간대 정원 {limits.perSlot}명 · 일일 정원 {limits.perDay}명
+                  </p>
+                  {dailyLimitReached && (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                      <AlertTitle>예약 마감</AlertTitle>
+                      <AlertDescription>
+                        선택한 날짜의 예약 정원이 모두 찼습니다. 다른 날짜를 선택해주세요.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 {/* 방문 이력 확인 섹션 */}
@@ -363,7 +424,8 @@ export default function ReservationPage() {
                     !hasHistory ||
                     hasHistory === null ||
                     !formData.timeSlot ||
-                    createReservationMutation.isPending
+                    createReservationMutation.isPending ||
+                    dailyLimitReached
                   }
                 >
                   {createReservationMutation.isPending ? "예약 중..." : "예약 등록"}

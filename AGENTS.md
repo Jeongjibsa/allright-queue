@@ -60,6 +60,7 @@
 - Do not commit secrets; store them in `.env.local` (e.g., `NEXT_PUBLIC_APP_URL`).
 - Keep server-only logic inside `src/app/api/*`; avoid leaking sensitive data to client components.
 - Favour permissive-licence dependencies and update `DEPENDENCIES.md` when adding new packages.
+- 예약 정원과 안내 메시지는 `NEXT_PUBLIC_RESERVATION_MAX_PER_SLOT`, `NEXT_PUBLIC_RESERVATION_MAX_PER_DAY`, `NEXT_PUBLIC_HOSPITAL_NAME`, `NEXT_PUBLIC_HOSPITAL_CONTACT`로 조정합니다.
 
 ## Cursor Process Snapshot
 
@@ -94,6 +95,7 @@ Keep these checklists in sync with delivery status. Check items (`[x]`) as they 
 - [x] Persist reservations (current: `localStorage`; future: Redis/PostgreSQL) with collision-resistant IDs (`src/lib/useReservation.ts:36`).
 - [x] Return reservation summary with copy/share affordances (복사/공유 버튼 및 핸들러 `src/app/reservation/page.tsx:411`).
 - [x] Provide calendar UI with blocked past dates and configurable slots (과거 날짜 차단 + 슬롯 선택 UI `src/app/reservation/page.tsx:292`, `src/lib/constants.ts:12`).
+- [x] 시간대·일별 예약 정원 제어 및 표준화된 알림 메시지 제공 (`src/lib/useReservation.ts:52`, `src/app/reservation/page.tsx:292`).
 
 ### Phase D — Admin Dashboard (PRD §4.4)
 

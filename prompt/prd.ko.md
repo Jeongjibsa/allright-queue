@@ -20,6 +20,7 @@
 - [x] 예약 정보를 localStorage에 저장하고 충돌 저항 토큰을 생성함 (`src/lib/useReservation.ts:36`)
 - [x] 예약 요약에 복사/공유 기능을 제공함 (복사·공유 버튼 및 로직 — `src/app/reservation/page.tsx:411`)
 - [x] 과거 날짜를 비활성화하고 가변 슬롯을 지원하는 캘린더 UI를 제공함 (과거 날짜 차단 + 슬롯 선택 UI — `src/app/reservation/page.tsx:292`, `src/lib/constants.ts:12`)
+- [x] 시간대·일별 예약 정원을 제어하고 SMS/app push 메시지 포맷을 표준화함 (`src/lib/useReservation.ts:52`, `src/app/reservation/page.tsx:292`)
 
 ## Phase D — 관리자 대시보드 (PRD §4.4)
 - [x] `PATCH /api/queue?action=list`로 30초 주기 목록을 조회함 (`src/app/admin/page.tsx:57`)

@@ -286,6 +286,53 @@ export function useDeleteReservation() {
   });
 }
 
+export function useUpdateReservation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      data: {
+        reservationId: string;
+        updates: Pick<
+          ReservationData,
+          "name" | "patientId" | "phone" | "service" | "date" | "timeSlot" | "estimatedWaitTime"
+        >;
+      }
+    ) => {
+      const reservations = readReservations();
+      const index = reservations.findIndex((reservation) => reservation.reservationId === data.reservationId);
+      if (index === -1) {
+        throw new Error("Reservation not found");
+      }
+
+      const current = reservations[index];
+      const nextReservation: ReservationData = {
+        ...current,
+        ...data.updates,
+      };
+
+      const remaining = reservations.filter((reservation) => reservation.reservationId !== data.reservationId);
+      const limits = getReservationLimits(nextReservation.service, nextReservation.date);
+      assertReservationCapacity(
+        nextReservation.date,
+        nextReservation.timeSlot,
+        nextReservation.service,
+        remaining,
+        limits
+      );
+
+      const nextReservations = [...remaining];
+      nextReservations.splice(index, 0, nextReservation);
+      writeReservations(nextReservations);
+
+      return nextReservation;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+    },
+  });
+}
+
 // Pure helper for testing
 export function createReservationRecord(data: {
   name: string;

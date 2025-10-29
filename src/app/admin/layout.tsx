@@ -5,7 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Stethoscope, Users, Settings, Menu, X, Contact, Calendar } from "lucide-react";
+import {
+  LayoutDashboard,
+  Stethoscope,
+  Users,
+  Settings,
+  Menu,
+  X,
+  Contact,
+  Calendar,
+  SlidersHorizontal,
+} from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const sidebarItems = [
@@ -33,6 +43,11 @@ const sidebarItems = [
     title: "예약 관리",
     href: "/admin/reservations",
     icon: Calendar,
+  },
+  {
+    title: "정원 설정",
+    href: "/admin/reservations/capacity",
+    icon: SlidersHorizontal,
   },
   {
     title: "설정",

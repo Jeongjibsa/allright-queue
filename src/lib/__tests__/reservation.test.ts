@@ -3,8 +3,10 @@ import {
   assertReservationCapacity,
   buildReservationMessage,
   createReservationRecord,
+  getReservationLimits,
   ReservationLimitError,
 } from "@/lib/useReservation";
+import { setReservationCapacityRules } from "@/lib/storage";
 import type { ReservationData } from "@/types/domain";
 
 describe("reservation creation", () => {
@@ -67,21 +69,29 @@ describe("reservation capacity guard", () => {
     createdAt: Date.now(),
   };
 
+  const limits = (overrides: Partial<{
+    perSlot: number;
+    perDay: number;
+    perSlotScope: "global" | "service";
+    perDayScope: "global" | "service";
+  }> = {}) => ({
+    perSlot: overrides.perSlot ?? 4,
+    perDay: overrides.perDay ?? 40,
+    perSlotScope: overrides.perSlotScope ?? "global",
+    perDayScope: overrides.perDayScope ?? "global",
+  });
+
   it("allows reservation when under limits", () => {
     expect(() =>
-      assertReservationCapacity("2025-01-10", "09:30", [sampleReservation], {
-        perSlot: 2,
-        perDay: 5,
-      })
+      assertReservationCapacity("2025-01-10", "09:30", "일반진료", [sampleReservation], limits())
     ).not.toThrow();
   });
 
   it("throws slot limit error when time slot is full", () => {
     expect(() =>
-      assertReservationCapacity("2025-01-10", "09:00", [sampleReservation], {
+      assertReservationCapacity("2025-01-10", "09:00", "일반진료", [sampleReservation], limits({
         perSlot: 1,
-        perDay: 5,
-      })
+      }))
     ).toThrowError(ReservationLimitError);
   });
 
@@ -92,10 +102,113 @@ describe("reservation capacity guard", () => {
     ];
 
     expect(() =>
-      assertReservationCapacity("2025-01-10", "10:00", reservations, {
-        perSlot: 5,
+      assertReservationCapacity("2025-01-10", "10:00", "일반진료", reservations, limits({
         perDay: 2,
-      })
+      }))
     ).toThrowError(ReservationLimitError);
+  });
+
+  it("counts only matching service when scope is service-specific", () => {
+    const otherServiceReservation: ReservationData = {
+      ...sampleReservation,
+      reservationId: "R-2",
+      service: "재진",
+    };
+
+    expect(() =>
+      assertReservationCapacity(
+        "2025-01-10",
+        "09:00",
+        "일반진료",
+        [otherServiceReservation],
+        limits({
+          perSlot: 1,
+          perSlotScope: "service",
+          perDay: 1,
+          perDayScope: "service",
+        })
+      )
+    ).not.toThrow();
+
+    expect(() =>
+      assertReservationCapacity(
+        "2025-01-10",
+        "09:00",
+        "일반진료",
+        [otherServiceReservation],
+        limits({
+          perSlot: 1,
+          perSlotScope: "global",
+        })
+      )
+    ).toThrowError(ReservationLimitError);
+
+    expect(() =>
+      assertReservationCapacity(
+        "2025-01-10",
+        "09:00",
+        "일반진료",
+        [otherServiceReservation, sampleReservation],
+        limits({
+          perDay: 1,
+          perDayScope: "service",
+        })
+      )
+    ).toThrowError(ReservationLimitError);
+  });
+});
+
+describe("reservation limits with rules", () => {
+  beforeEach(() => {
+    setReservationCapacityRules([]);
+  });
+
+  afterEach(() => {
+    setReservationCapacityRules([]);
+  });
+
+  it("applies global rules for matching weekday", () => {
+    setReservationCapacityRules([
+      {
+        id: "rule-1",
+        service: "ALL",
+        dayOfWeek: "MON",
+        perSlot: 6,
+        perDay: 24,
+        isActive: true,
+      },
+    ]);
+
+    const limits = getReservationLimits("일반진료", "2025-01-06");
+    expect(limits.perDay).toBe(24);
+    expect(limits.perDayScope).toBe("global");
+    expect(limits.perSlot).toBe(6);
+  });
+
+  it("prefers service-specific overrides over global rules", () => {
+    setReservationCapacityRules([
+      {
+        id: "rule-1",
+        service: "ALL",
+        dayOfWeek: "ALL",
+        perSlot: 5,
+        perDay: 30,
+        isActive: true,
+      },
+      {
+        id: "rule-2",
+        service: "일반진료",
+        dayOfWeek: "FRI",
+        perSlot: 3,
+        perDay: 12,
+        isActive: true,
+      },
+    ]);
+
+    const limits = getReservationLimits("일반진료", "2025-01-03");
+    expect(limits.perSlot).toBe(3);
+    expect(limits.perSlotScope).toBe("service");
+    expect(limits.perDay).toBe(12);
+    expect(limits.perDayScope).toBe("service");
   });
 });

@@ -34,6 +34,7 @@
 - [x] 의료진 CRUD와 진료실 자동 지정, 전문 분야·연락처·활성 상태를 관리함 (`src/app/admin/doctors/page.tsx:20`)
 - [x] 환자 CRUD와 메모, 상태 토글을 지원함 (`src/app/admin/patients/page.tsx:20`)
 - [x] 설정 화면에서 자동 새로고침·알림 등 UI 토글을 제공함 (백엔드 연동 전 단계 — `src/app/admin/settings/page.tsx:1`)
+- [x] 서비스/요일별 예약 정원을 관리자 화면에서 관리함 (`src/app/admin/reservations/capacity/page.tsx`)
 - [ ] localStorage에서 백엔드 저장소로 이전하는 지속화 계획을 수립함 (문서화/로드맵 미비)
 
 ## 인프라 & 운영 로드맵 (PRD §2, §6, §8, §9)

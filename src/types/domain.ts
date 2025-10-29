@@ -37,3 +37,15 @@ export type ReservationData = {
   estimatedWaitTime: number;
   createdAt: number; // epoch ms
 };
+
+export type WeekdayToken = "ALL" | "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
+
+export type ReservationCapacityRule = {
+  id: string;
+  service: string; // service value or "ALL"
+  dayOfWeek: WeekdayToken;
+  perSlot?: number | null;
+  perDay?: number | null;
+  isActive: boolean;
+  note?: string;
+};

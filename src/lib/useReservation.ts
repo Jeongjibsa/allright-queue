@@ -2,9 +2,17 @@
 "use client";
 
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getJSON, setJSON } from "@/lib/storage";
+import {
+  getJSON,
+  setJSON,
+  getReservationCapacityRules,
+} from "@/lib/storage";
 import { LS_KEYS } from "@/lib/constants";
-import type { ReservationData } from "@/types/domain";
+import type {
+  ReservationCapacityRule,
+  ReservationData,
+  WeekdayToken,
+} from "@/types/domain";
 
 export type VisitHistoryCheck = {
   patientId: string;
@@ -15,6 +23,8 @@ export type VisitHistoryCheck = {
 export type ReservationLimits = {
   perSlot: number;
   perDay: number;
+  perSlotScope: "global" | "service";
+  perDayScope: "global" | "service";
 };
 
 export type ReservationMessageChannel = "sms" | "push" | "clipboard";
@@ -52,6 +62,32 @@ function writeReservations(reservations: ReservationData[]): void {
   setJSON(LS_KEYS.reservations, reservations);
 }
 
+const WEEKDAY_SEQUENCE: WeekdayToken[] = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+function toWeekdayToken(date?: string): WeekdayToken {
+  if (!date) return "ALL";
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return "ALL";
+  return WEEKDAY_SEQUENCE[parsed.getDay()];
+}
+
+function matchCapacityRule(
+  rule: ReservationCapacityRule,
+  service?: string,
+  date?: string
+): boolean {
+  const dayToken = toWeekdayToken(date);
+  const serviceMatches = rule.service === "ALL" || (!!service && rule.service === service);
+  const dayMatches = rule.dayOfWeek === "ALL" || rule.dayOfWeek === dayToken;
+  return rule.isActive && serviceMatches && dayMatches;
+}
+
+function ruleSpecificity(rule: ReservationCapacityRule): number {
+  const serviceScore = rule.service === "ALL" ? 0 : 1;
+  const dayScore = rule.dayOfWeek === "ALL" ? 0 : 1;
+  return serviceScore * 2 + dayScore;
+}
+
 export class ReservationLimitError extends Error {
   code: ReservationLimitErrorCode;
 
@@ -62,29 +98,58 @@ export class ReservationLimitError extends Error {
   }
 }
 
-export function getReservationLimits(): ReservationLimits {
-  return {
-    perSlot: parseLimit(process.env.NEXT_PUBLIC_RESERVATION_MAX_PER_SLOT, DEFAULT_SLOT_LIMIT),
-    perDay: parseLimit(process.env.NEXT_PUBLIC_RESERVATION_MAX_PER_DAY, DEFAULT_DAY_LIMIT),
-  };
+export function getReservationLimits(
+  service?: string,
+  date?: string
+): ReservationLimits {
+  let perSlot = parseLimit(process.env.NEXT_PUBLIC_RESERVATION_MAX_PER_SLOT, DEFAULT_SLOT_LIMIT);
+  let perDay = parseLimit(process.env.NEXT_PUBLIC_RESERVATION_MAX_PER_DAY, DEFAULT_DAY_LIMIT);
+  let perSlotScope: ReservationLimits["perSlotScope"] = "global";
+  let perDayScope: ReservationLimits["perDayScope"] = "global";
+
+  const rules = getReservationCapacityRules();
+  const matches = rules.filter((rule) => matchCapacityRule(rule, service, date));
+  matches.sort((a, b) => ruleSpecificity(a) - ruleSpecificity(b));
+
+  matches.forEach((rule) => {
+    const serviceSpecific = rule.service !== "ALL";
+    if (rule.perSlot != null) {
+      perSlot = rule.perSlot;
+      perSlotScope = serviceSpecific ? "service" : "global";
+    }
+    if (rule.perDay != null) {
+      perDay = rule.perDay;
+      perDayScope = serviceSpecific ? "service" : "global";
+    }
+  });
+
+  return { perSlot, perDay, perSlotScope, perDayScope };
 }
 
 export function assertReservationCapacity(
   date: string,
   timeSlot: string,
+  service: string,
   reservations: ReservationData[],
   limits: ReservationLimits
 ): void {
   const reservationsForDay = reservations.filter((reservation) => reservation.date === date);
-  if (reservationsForDay.length >= limits.perDay) {
+  const dayPool =
+    limits.perDayScope === "service"
+      ? reservationsForDay.filter((reservation) => reservation.service === service)
+      : reservationsForDay;
+
+  if (dayPool.length >= limits.perDay) {
     throw new ReservationLimitError("DAY_LIMIT");
   }
 
-  const reservationsForSlot = reservationsForDay.filter(
-    (reservation) => reservation.timeSlot === timeSlot
-  );
+  const slotPool = reservationsForDay.filter((reservation) => reservation.timeSlot === timeSlot);
+  const relevantSlotPool =
+    limits.perSlotScope === "service"
+      ? slotPool.filter((reservation) => reservation.service === service)
+      : slotPool;
 
-  if (reservationsForSlot.length >= limits.perSlot) {
+  if (relevantSlotPool.length >= limits.perSlot) {
     throw new ReservationLimitError("SLOT_LIMIT");
   }
 }
@@ -175,9 +240,9 @@ export function useCreateReservation() {
       date: string;
       timeSlot: string;
     }) => {
-      const limits = getReservationLimits();
+      const limits = getReservationLimits(data.service, data.date);
       const reservations = readReservations();
-      assertReservationCapacity(data.date, data.timeSlot, reservations, limits);
+      assertReservationCapacity(data.date, data.timeSlot, data.service, reservations, limits);
 
       const reservationData = createReservationRecord(data);
       reservations.push(reservationData);

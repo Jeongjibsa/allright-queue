@@ -35,7 +35,6 @@ import type { ReservationData } from "@/types/domain";
 
 export default function ReservationPage() {
   const [serviceOptions] = useState(DEFAULT_SERVICE_OPTIONS);
-  const limits = useMemo(() => getReservationLimits(), []);
   const prefill = getReservationPrefill();
   const [formData, setFormData] = useState({
     name: prefill?.name ?? "",
@@ -52,6 +51,10 @@ export default function ReservationPage() {
   const [dailyCount, setDailyCount] = useState(0);
 
   const createReservationMutation = useCreateReservation();
+  const limits = useMemo(
+    () => getReservationLimits(formData.service, formData.date),
+    [formData.service, formData.date]
+  );
   const refreshSlotUsage = useCallback(() => {
     if (!formData.date) {
       setSlotUsage({});
@@ -59,9 +62,17 @@ export default function ReservationPage() {
       return;
     }
     const reservationsForDay = getReservationsByDate(formData.date);
-    setSlotUsage(calculateSlotUsage(reservationsForDay));
-    setDailyCount(reservationsForDay.length);
-  }, [formData.date]);
+    const dayRelevant =
+      limits.perDayScope === "service" && formData.service
+        ? reservationsForDay.filter((reservation) => reservation.service === formData.service)
+        : reservationsForDay;
+    const slotRelevant =
+      limits.perSlotScope === "service" && formData.service
+        ? reservationsForDay.filter((reservation) => reservation.service === formData.service)
+        : reservationsForDay;
+    setSlotUsage(calculateSlotUsage(slotRelevant));
+    setDailyCount(dayRelevant.length);
+  }, [formData.date, formData.service, limits.perDayScope, limits.perSlotScope]);
 
   useEffect(() => {
     refreshSlotUsage();
@@ -150,8 +161,7 @@ export default function ReservationPage() {
 
   const handleSelectTimeSlot = (slot: string) => {
     const usage = slotUsage[slot] ?? 0;
-    const dailyLimitReached = formData.date ? dailyCount >= limits.perDay : false;
-    if (dailyLimitReached || usage >= limits.perSlot) {
+    if (isDailyLimitReached || usage >= limits.perSlot) {
       alert("선택한 시간대는 예약이 마감되었습니다.");
       return;
     }
@@ -159,18 +169,12 @@ export default function ReservationPage() {
   };
 
   const clipboardMessage = useMemo(
-    () =>
-      successData
-        ? buildReservationMessage(successData, { channel: "clipboard" })
-        : null,
+    () => (successData ? buildReservationMessage(successData, { channel: "clipboard" }) : null),
     [successData]
   );
 
   const shareMessage = useMemo(
-    () =>
-      successData
-        ? buildReservationMessage(successData, { channel: "sms" })
-        : null,
+    () => (successData ? buildReservationMessage(successData, { channel: "sms" }) : null),
     [successData]
   );
 
@@ -207,13 +211,14 @@ export default function ReservationPage() {
     }
   };
 
-  const dailyLimitReached = formData.date ? dailyCount >= limits.perDay : false;
+  const isDailyLimitReached =
+    !!formData.date && limits.perDay > 0 && dailyCount >= limits.perDay;
 
   return (
-    <div className="flex min-h-[100dvh] w-full items-start justify-center bg-background px-4 py-6 sm:px-6 sm:py-8">
+    <div className="bg-background flex min-h-[100dvh] w-full items-start justify-center px-4 py-6 sm:px-6 sm:py-8">
       <div className="w-full max-w-md space-y-4">
         <header className="flex items-center justify-between">
-          <div className="text-center w-full">
+          <div className="w-full text-center">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">예약 등록</h1>
             <p className="text-muted-foreground mt-2">기존 환자의 진료 예약을 등록하세요</p>
           </div>
@@ -338,7 +343,7 @@ export default function ReservationPage() {
                     {RESERVATION_TIME_SLOTS.map((slot) => {
                       const selected = formData.timeSlot === slot.value;
                       const usage = slotUsage[slot.value] ?? 0;
-                      const slotFull = usage >= limits.perSlot || dailyLimitReached;
+                      const slotFull = usage >= limits.perSlot || isDailyLimitReached;
                       return (
                         <Button
                           key={slot.value}
@@ -346,11 +351,11 @@ export default function ReservationPage() {
                           variant={selected ? "default" : "outline"}
                           onClick={() => handleSelectTimeSlot(slot.value)}
                           aria-pressed={selected}
-                          className="flex flex-col items-center justify-center py-3"
+                          className="h-16 flex flex-col items-center justify-center gap-1 px-2 text-sm"
                           disabled={slotFull}
                         >
-                          <span>{slot.label}</span>
-                          <span className="text-[0.7rem] text-muted-foreground">
+                          <span className="font-medium leading-none">{slot.label}</span>
+                          <span className="text-xs text-muted-foreground leading-none">
                             {usage}/{limits.perSlot}
                           </span>
                         </Button>
@@ -358,9 +363,12 @@ export default function ReservationPage() {
                     })}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    시간대 정원 {limits.perSlot}명 · 일일 정원 {limits.perDay}명
+                    시간대 정원 {limits.perSlot}명
+                    {limits.perSlotScope === "service" ? " (서비스 기준)" : " (전체 기준)"} · 일일 정원{" "}
+                    {limits.perDay}명
+                    {limits.perDayScope === "service" ? " (서비스 기준)" : " (전체 기준)"}
                   </p>
-                  {dailyLimitReached && (
+                  {isDailyLimitReached && (
                     <Alert>
                       <AlertCircle className="h-4 w-4 text-red-500" />
                       <AlertTitle>예약 마감</AlertTitle>
@@ -425,7 +433,7 @@ export default function ReservationPage() {
                     hasHistory === null ||
                     !formData.timeSlot ||
                     createReservationMutation.isPending ||
-                    dailyLimitReached
+                    isDailyLimitReached
                   }
                 >
                   {createReservationMutation.isPending ? "예약 중..." : "예약 등록"}

@@ -9,7 +9,7 @@
 - Obtain explicit user approval before creating new files or modifying existing files unless the user instruction says otherwise.
 - Share and agree on an implementation plan before making code changes.
 - Always respond to the user in Korean.
-- Keep this guide written in English to minimize token usage.
+- Keep this handbook written in English.
 
 ## Project Structure & Module Organization
 
@@ -95,7 +95,7 @@ Keep these checklists in sync with delivery status. Check items (`[x]`) as they 
 - [x] Persist reservations (current: `localStorage`; future: Redis/PostgreSQL) with collision-resistant IDs (`src/lib/useReservation.ts:36`).
 - [x] Return reservation summary with copy/share affordances (복사/공유 버튼 및 핸들러 `src/app/reservation/page.tsx:411`).
 - [x] Provide calendar UI with blocked past dates and configurable slots (과거 날짜 차단 + 슬롯 선택 UI `src/app/reservation/page.tsx:292`, `src/lib/constants.ts:12`).
-- [x] 시간대·일별 예약 정원 제어 및 표준화된 알림 메시지 제공 (`src/lib/useReservation.ts:52`, `src/app/reservation/page.tsx:292`).
+- [x] Control of reservation capacity by time slot and day, and provision of standardized notification messages (`src/lib/useReservation.ts:52`, `src/app/reservation/page.tsx:292`).
 
 ### Phase D — Admin Dashboard (PRD §4.4)
 
@@ -111,6 +111,7 @@ Keep these checklists in sync with delivery status. Check items (`[x]`) as they 
 - [x] Doctors CRUD with room auto-fill, specialties, contact details, enable/disable (`src/app/admin/doctors/page.tsx:20`).
 - [x] Patients CRUD supporting notes and status toggles (`src/app/admin/patients/page.tsx:20`).
 - [x] Settings screen wiring for auto refresh, notifications, and other toggles (UI-only until backend ready) (`src/app/admin/settings/page.tsx:1`).
+- [x] Reservation capacity rules manageable via admin UI (`src/app/admin/reservations/capacity/page.tsx`).
 - [ ] Plan persistence migration path from `localStorage` to backend stores (no documented migration plan yet).
 
 ### Infrastructure & Operations Roadmap (PRD §2, §6, §8, §9)

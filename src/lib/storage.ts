@@ -1,4 +1,10 @@
-import type { ServiceItem, DoctorItem, PatientItem, ReservationData } from "@/types/domain";
+import type {
+  ServiceItem,
+  DoctorItem,
+  PatientItem,
+  ReservationData,
+  ReservationCapacityRule,
+} from "@/types/domain";
 import { DEFAULT_SERVICE_OPTIONS, LS_KEYS } from "@/lib/constants";
 
 export function getJSON<T>(key: string): T | null {
@@ -140,4 +146,18 @@ export function ensureDefaultReservations(): void {
     },
   ];
   setJSON(LS_KEYS.reservations, defaults);
+}
+
+export function getReservationCapacityRules(): ReservationCapacityRule[] {
+  return getJSON<ReservationCapacityRule[]>(LS_KEYS.reservationCapacity) ?? [];
+}
+
+export function setReservationCapacityRules(rules: ReservationCapacityRule[]): void {
+  setJSON(LS_KEYS.reservationCapacity, rules);
+}
+
+export function ensureDefaultReservationCapacity(): void {
+  const existing = getJSON<ReservationCapacityRule[]>(LS_KEYS.reservationCapacity);
+  if (existing) return;
+  setJSON(LS_KEYS.reservationCapacity, []);
 }

@@ -22,6 +22,7 @@ export function getReservationPrefill() {
     phone: "010-0000-0000",
     service: "일반진료",
     date: today,
+    timeSlot: "09:00",
   } as const;
 }
 
@@ -29,4 +30,3 @@ export function getTokenPrefill() {
   if (!devPrefillEnabled()) return "";
   return "Q-DEV-TOKEN-000001";
 }
-

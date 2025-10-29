@@ -18,3 +18,16 @@ export const LS_KEYS = {
   patients: "patients",
   reservations: "reservations",
 } as const;
+
+export const RESERVATION_TIME_SLOTS = [
+  { value: "09:00", label: "09:00" },
+  { value: "09:30", label: "09:30" },
+  { value: "10:00", label: "10:00" },
+  { value: "10:30", label: "10:30" },
+  { value: "11:00", label: "11:00" },
+  { value: "13:00", label: "13:00" },
+  { value: "13:30", label: "13:30" },
+  { value: "14:00", label: "14:00" },
+  { value: "14:30", label: "14:30" },
+  { value: "15:00", label: "15:00" },
+] as const;

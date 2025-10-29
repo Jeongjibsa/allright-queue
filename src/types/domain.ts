@@ -33,6 +33,7 @@ export type ReservationData = {
   phone: string;
   service: string;
   date: string; // yyyy-mm-dd
+  timeSlot: string; // HH:mm
   estimatedWaitTime: number;
   createdAt: number; // epoch ms
 };

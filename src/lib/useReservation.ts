@@ -51,6 +51,7 @@ export function useCreateReservation() {
       phone: string;
       service: string;
       date: string;
+      timeSlot: string;
     }) => {
       const reservationData = createReservationRecord(data);
       const existingReservations = JSON.parse(localStorage.getItem("reservations") || "[]");
@@ -109,6 +110,7 @@ export function createReservationRecord(data: {
   phone: string;
   service: string;
   date: string;
+  timeSlot: string;
 }): ReservationData {
   const reservationId = `R-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`.toUpperCase();
   const estimatedWaitTime = 10; // default; could map from service in future
@@ -119,6 +121,7 @@ export function createReservationRecord(data: {
     phone: data.phone,
     service: data.service,
     date: data.date,
+    timeSlot: data.timeSlot,
     estimatedWaitTime,
     createdAt: Date.now(),
   };

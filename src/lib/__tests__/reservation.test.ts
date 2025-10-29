@@ -12,13 +12,14 @@ describe("reservation creation", () => {
       phone: "010-0000-0000",
       service: "일반진료",
       date: "2025-01-10",
+      timeSlot: "09:00",
     });
     expect(rec.name).toBe("홍길동");
     expect(rec.patientId).toBe("P123");
     expect(rec.estimatedWaitTime).toBe(10);
     expect(rec.createdAt).toBe(now);
     expect(rec.reservationId).toMatch(/^R-/);
+    expect(rec.timeSlot).toBe("09:00");
     vi.useRealTimers();
   });
 });
-

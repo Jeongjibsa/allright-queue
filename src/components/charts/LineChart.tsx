@@ -69,3 +69,30 @@ export function LineChart() {
     </ChartContainer>
   );
 }
+
+type Point = { x: number; y: number };
+
+// Exported for unit tests and potential SVG fallbacks.
+export function computeLinePath(points: Point[], width: number, height: number): string {
+  if (!points.length || width <= 0 || height <= 0) return "";
+
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const rangeX = maxX - minX || 1;
+  const rangeY = maxY - minY || 1;
+
+  const scaleX = (value: number) => ((value - minX) / rangeX) * width;
+  const scaleY = (value: number) => height - ((value - minY) / rangeY) * height;
+
+  return points
+    .map((point, index) => {
+      const prefix = index === 0 ? "M" : "L";
+      return `${prefix}${scaleX(point.x)},${scaleY(point.y)}`;
+    })
+    .join(" ");
+}

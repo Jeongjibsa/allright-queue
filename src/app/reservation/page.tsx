@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Calendar as CalendarIcon, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, CheckCircle, AlertCircle, Copy, Share2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useCreateReservation } from "@/lib/useReservation";
 import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { getReservationPrefill } from "@/lib/devDefaults";
-import { DEFAULT_SERVICE_OPTIONS } from "@/lib/constants";
+import { DEFAULT_SERVICE_OPTIONS, RESERVATION_TIME_SLOTS } from "@/lib/constants";
 
 // 서비스 옵션은 공통 상수를 사용합니다.
 
@@ -34,6 +34,7 @@ export default function ReservationPage() {
     phone: prefill?.phone ?? "",
     service: prefill?.service ?? "",
     date: prefill?.date ?? "",
+    timeSlot: prefill?.timeSlot ?? "",
   });
 
   const [hasHistory, setHasHistory] = useState<boolean | null>(null);
@@ -43,6 +44,7 @@ export default function ReservationPage() {
     service: string;
     estimatedWaitTime: number;
     date: string;
+    timeSlot: string;
   } | null>(null);
 
   const createReservationMutation = useCreateReservation();
@@ -77,7 +79,8 @@ export default function ReservationPage() {
       !formData.patientId ||
       !formData.phone ||
       !formData.service ||
-      !formData.date
+      !formData.date ||
+      !formData.timeSlot
     ) {
       alert("모든 필드를 입력해주세요.");
       return;
@@ -100,6 +103,7 @@ export default function ReservationPage() {
         phone: formData.phone,
         service: formData.service,
         date: formData.date,
+        timeSlot: formData.timeSlot,
       });
 
       setSuccessData({
@@ -108,6 +112,7 @@ export default function ReservationPage() {
         service: result.service,
         estimatedWaitTime: result.estimatedWaitTime,
         date: result.date,
+        timeSlot: result.timeSlot,
       });
 
       // 폼 초기화
@@ -117,12 +122,48 @@ export default function ReservationPage() {
         phone: "",
         service: "",
         date: "",
+        timeSlot: "",
       });
       setHasHistory(null);
     } catch (error) {
       console.error("예약 실패:", error);
       alert("예약 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
+  };
+
+  const handleSelectTimeSlot = (slot: string) => {
+    setFormData((prev) => ({ ...prev, timeSlot: slot }));
+  };
+
+  const successSummary = successData
+    ? `예약 확인\n환자명: ${successData.name}\n진료항목: ${successData.service}\n예약일시: ${successData.date} ${successData.timeSlot}\n예약번호: ${successData.reservationId}`
+    : "";
+
+  const handleCopySummary = async () => {
+    if (!successData) return;
+    try {
+      await navigator.clipboard.writeText(successSummary);
+      alert("예약 정보가 복사되었습니다.");
+    } catch (error) {
+      console.error("예약 정보 복사 실패:", error);
+      alert("복사에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const handleShareSummary = async () => {
+    if (!successData) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "올바른정형외과 예약 안내",
+          text: successSummary,
+        });
+        return;
+      } catch (error) {
+        console.error("예약 정보 공유 실패:", error);
+      }
+    }
+    await handleCopySummary();
   };
 
   return (
@@ -248,6 +289,27 @@ export default function ReservationPage() {
                   </Alert>
                 )}
 
+                <div className="space-y-2">
+                  <Label>예약 시간 *</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {RESERVATION_TIME_SLOTS.map((slot) => {
+                      const selected = formData.timeSlot === slot.value;
+                      return (
+                        <Button
+                          key={slot.value}
+                          type="button"
+                          variant={selected ? "default" : "outline"}
+                          onClick={() => handleSelectTimeSlot(slot.value)}
+                          aria-pressed={selected}
+                          className="justify-center"
+                        >
+                          {slot.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* 방문 이력 확인 섹션 */}
                 <div className="space-y-3">
                   <Separator />
@@ -298,7 +360,10 @@ export default function ReservationPage() {
                   type="submit"
                   className="w-full"
                   disabled={
-                    !hasHistory || hasHistory === null || createReservationMutation.isPending
+                    !hasHistory ||
+                    hasHistory === null ||
+                    !formData.timeSlot ||
+                    createReservationMutation.isPending
                   }
                 >
                   {createReservationMutation.isPending ? "예약 중..." : "예약 등록"}
@@ -330,6 +395,10 @@ export default function ReservationPage() {
                   <span className="font-medium">{successData.date}</span>
                 </div>
                 <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">예약 시간</span>
+                  <span className="font-medium">{successData.timeSlot}</span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-muted-foreground text-sm">예상 대기시간</span>
                   <span className="font-medium">{successData.estimatedWaitTime}분</span>
                 </div>
@@ -337,6 +406,17 @@ export default function ReservationPage() {
                   <span className="text-muted-foreground text-sm">예약번호</span>
                   <span className="font-mono font-medium">{successData.reservationId}</span>
                 </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={handleCopySummary}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  예약 정보 복사
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={handleShareSummary}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  예약 정보 공유
+                </Button>
               </div>
 
               <Button onClick={() => setSuccessData(null)} className="w-full" variant="secondary">

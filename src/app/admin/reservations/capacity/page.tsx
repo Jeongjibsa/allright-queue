@@ -1,13 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -213,9 +207,7 @@ export default function ReservationCapacityPage() {
   };
 
   const handleToggleActive = (id: string, value: boolean) => {
-    const nextRules = rules.map((rule) =>
-      rule.id === id ? { ...rule, isActive: value } : rule
-    );
+    const nextRules = rules.map((rule) => (rule.id === id ? { ...rule, isActive: value } : rule));
     updateRules(nextRules);
     if (editingRule?.id === id) {
       setEditForm((prev) => ({ ...prev, isActive: value }));
@@ -272,13 +264,14 @@ export default function ReservationCapacityPage() {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              기본 정원은 `NEXT_PUBLIC_RESERVATION_MAX_PER_SLOT`, `NEXT_PUBLIC_RESERVATION_MAX_PER_DAY`
-              값을 따릅니다. 규칙을 추가하면 해당 조건에 우선 적용됩니다.
+              기본 정원은 `NEXT_PUBLIC_RESERVATION_MAX_PER_SLOT`,
+              `NEXT_PUBLIC_RESERVATION_MAX_PER_DAY` 값을 따릅니다. 규칙을 추가하면 해당 조건에 우선
+              적용됩니다.
             </AlertDescription>
           </Alert>
 
-          {isAdding && (
-            <div className="space-y-6 rounded-lg border p-4">
+          <Collapse open={isAdding} className="rounded-lg border">
+            <div className="space-y-6 p-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>서비스</Label>
@@ -373,7 +366,7 @@ export default function ReservationCapacityPage() {
                 </Button>
               </div>
             </div>
-          )}
+          </Collapse>
         </CardContent>
       </Card>
 
@@ -396,7 +389,9 @@ export default function ReservationCapacityPage() {
         </CardHeader>
         <CardContent>
           {sortedRules.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">등록된 정원 규칙이 없습니다.</div>
+            <div className="text-muted-foreground py-8 text-center">
+              등록된 정원 규칙이 없습니다.
+            </div>
           ) : (
             <div className="space-y-4">
               {sortedRules.map((rule) => (
@@ -404,8 +399,12 @@ export default function ReservationCapacityPage() {
                   <div className="flex flex-wrap items-center justify-between gap-3 p-4">
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">{serviceLabelMap[rule.service] ?? rule.service}</Badge>
-                        <Badge variant="secondary">{weekdayLabels[rule.dayOfWeek] ?? rule.dayOfWeek}</Badge>
+                        <Badge variant="outline">
+                          {serviceLabelMap[rule.service] ?? rule.service}
+                        </Badge>
+                        <Badge variant="secondary">
+                          {weekdayLabels[rule.dayOfWeek] ?? rule.dayOfWeek}
+                        </Badge>
                         {rule.isActive ? (
                           <Badge variant="default">활성</Badge>
                         ) : (
@@ -419,7 +418,7 @@ export default function ReservationCapacityPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground">활성화</Label>
+                        <Label className="text-muted-foreground text-xs">활성화</Label>
                         <Switch
                           checked={rule.isActive}
                           onCheckedChange={(checked) => handleToggleActive(rule.id, checked)}
@@ -444,12 +443,15 @@ export default function ReservationCapacityPage() {
                       </Button>
                     </div>
                   </div>
-                  <Collapse open={editingRule?.id === rule.id} className="bg-muted/40">
+                  <Collapse open={editingRule?.id === rule.id} className="">
                     <div className="space-y-4 px-4 pt-2 pb-4">
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label>서비스</Label>
-                          <Select value={editForm.service} onValueChange={handleEditChange("service")}>
+                          <Select
+                            value={editForm.service}
+                            onValueChange={handleEditChange("service")}
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="서비스를 선택하세요" />
                             </SelectTrigger>
@@ -466,7 +468,9 @@ export default function ReservationCapacityPage() {
                           <Label>요일</Label>
                           <Select
                             value={editForm.dayOfWeek}
-                            onValueChange={(value: WeekdayToken) => handleEditChange("dayOfWeek")(value)}
+                            onValueChange={(value: WeekdayToken) =>
+                              handleEditChange("dayOfWeek")(value)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="요일을 선택하세요" />

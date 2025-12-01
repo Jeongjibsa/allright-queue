@@ -18,7 +18,7 @@ export function getReservationPrefill() {
   const today = new Date().toISOString().split("T")[0];
   return {
     name: "테스트환자",
-    patientId: "PTEST",
+    patientId: "P0001",
     phone: "010-0000-0000",
     service: "일반진료",
     date: today,

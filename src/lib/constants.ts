@@ -12,6 +12,9 @@ export const DEFAULT_SERVICE_OPTIONS = [
   { value: "처방", label: "처방", waitTime: SERVICE_WAIT_TIMES["처방"] },
 ] as const;
 
+export const PATIENT_ID_PREFIX = "P";
+export const PATIENT_ID_PAD_LENGTH = 4;
+
 export const LS_KEYS = {
   services: "services",
   doctors: "doctors",

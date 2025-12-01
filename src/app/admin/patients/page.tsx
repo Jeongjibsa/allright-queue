@@ -9,7 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Users, UserPlus, FileText, Plus, Edit, Trash2, Save, X, AlertTriangle } from "lucide-react";
 import { Collapse } from "@/components/ui/collapse";
-import { ensureDefaultPatients, getJSON, setJSON } from "@/lib/storage";
+import {
+  ensureDefaultPatients,
+  generateNextPatientId,
+  getPatientsWithNormalizedIds,
+  setJSON,
+} from "@/lib/storage";
 import { LS_KEYS } from "@/lib/constants";
 import type { PatientItem } from "@/types/domain";
 
@@ -31,7 +36,7 @@ export default function PatientsPage() {
   const fetchPatients = async () => {
     try {
       ensureDefaultPatients();
-      const list = getJSON<PatientItem[]>(LS_KEYS.patients) || [];
+      const list = getPatientsWithNormalizedIds();
       setPatients(list);
     } catch (error) {
       console.error("환자 조회 실패:", error);
@@ -54,7 +59,7 @@ export default function PatientsPage() {
     }
 
     const newPatient: PatientItem = {
-      id: Date.now().toString(),
+      id: generateNextPatientId(patients),
       name: formData.name,
       age: parseInt(formData.age),
       phone: formData.phone,

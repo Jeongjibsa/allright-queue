@@ -28,8 +28,23 @@ import { format, isBefore, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { getReservationPrefill } from "@/lib/devDefaults";
-import { DEFAULT_SERVICE_OPTIONS, RESERVATION_TIME_SLOTS } from "@/lib/constants";
+import {
+  DEFAULT_SERVICE_OPTIONS,
+  PATIENT_ID_PAD_LENGTH,
+  PATIENT_ID_PREFIX,
+  RESERVATION_TIME_SLOTS,
+} from "@/lib/constants";
 import type { ReservationData } from "@/types/domain";
+import { ensureDefaultPatients, getPatientsWithNormalizedIds } from "@/lib/storage";
+
+const sanitizePhoneNumber = (value: string) => value.replace(/\D/g, "");
+const extractPatientDigits = (value: string) => value.replace(/\D/g, "");
+const buildPatientId = (digits: string) => {
+  const numeric = extractPatientDigits(digits);
+  if (!numeric) return "";
+  return `${PATIENT_ID_PREFIX}${numeric.padStart(PATIENT_ID_PAD_LENGTH, "0")}`;
+};
+const patientDigitsPlaceholder = `예: ${"1".padStart(PATIENT_ID_PAD_LENGTH, "0")}`;
 
 // 서비스 옵션은 공통 상수를 사용합니다.
 
@@ -38,7 +53,7 @@ export default function ReservationPage() {
   const prefill = getReservationPrefill();
   const [formData, setFormData] = useState({
     name: prefill?.name ?? "",
-    patientId: prefill?.patientId ?? "",
+    patientIdDigits: prefill?.patientId ? extractPatientDigits(prefill.patientId) : "",
     phone: prefill?.phone ?? "",
     service: prefill?.service ?? "",
     date: prefill?.date ?? "",
@@ -78,16 +93,36 @@ export default function ReservationPage() {
     refreshSlotUsage();
   }, [refreshSlotUsage, successData]);
 
+  useEffect(() => {
+    setHasHistory((prev) => (prev === null ? prev : null));
+  }, [formData.name, formData.patientIdDigits, formData.phone]);
+
   // 기존 방문 이력 확인
   const checkVisitHistory = async () => {
-    if (!formData.patientId || !formData.phone) {
-      alert("환자 ID와 전화번호를 입력해주세요.");
+    if (!formData.name || !formData.patientIdDigits || !formData.phone) {
+      alert("이름, 환자 ID, 전화번호를 모두 입력해주세요.");
+      return;
+    }
+
+    const resolvedPatientId = buildPatientId(formData.patientIdDigits);
+    if (!resolvedPatientId) {
+      alert("환자 ID는 숫자만 입력할 수 있습니다.");
       return;
     }
 
     try {
-      // 임시 로직: 환자 ID가 "P"로 시작하면 기존 환자로 간주
-      const hasVisited = formData.patientId.startsWith("P");
+      ensureDefaultPatients();
+      const patients = getPatientsWithNormalizedIds();
+      const targetName = formData.name.trim();
+      const targetPhone = sanitizePhoneNumber(formData.phone);
+      const match = patients.find(
+        (patient) =>
+          patient.id === resolvedPatientId &&
+          patient.name.trim() === targetName &&
+          sanitizePhoneNumber(patient.phone) === targetPhone
+      );
+
+      const hasVisited = Boolean(match);
       setHasHistory(hasVisited);
 
       if (!hasVisited) {
@@ -105,13 +140,19 @@ export default function ReservationPage() {
 
     if (
       !formData.name ||
-      !formData.patientId ||
+      !formData.patientIdDigits ||
       !formData.phone ||
       !formData.service ||
       !formData.date ||
       !formData.timeSlot
     ) {
       alert("모든 필드를 입력해주세요.");
+      return;
+    }
+
+    const resolvedPatientId = buildPatientId(formData.patientIdDigits);
+    if (!resolvedPatientId) {
+      alert("환자 ID는 숫자만 입력할 수 있습니다.");
       return;
     }
 
@@ -128,7 +169,7 @@ export default function ReservationPage() {
     try {
       const result = await createReservationMutation.mutateAsync({
         name: formData.name,
-        patientId: formData.patientId,
+        patientId: resolvedPatientId,
         phone: formData.phone,
         service: formData.service,
         date: formData.date,
@@ -140,7 +181,7 @@ export default function ReservationPage() {
       // 폼 초기화
       setFormData({
         name: "",
-        patientId: "",
+        patientIdDigits: "",
         phone: "",
         service: "",
         date: "",
@@ -248,16 +289,30 @@ export default function ReservationPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="patientId">환자 ID *</Label>
-                  <Input
-                    id="patientId"
-                    value={formData.patientId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, patientId: e.target.value }))
-                    }
-                    placeholder="P001"
-                    required
-                  />
+                  <Label htmlFor="patientIdDigits">환자 ID *</Label>
+                  <div className="flex">
+                    <span className="border-input bg-muted text-muted-foreground flex h-9 items-center rounded-l-md border border-r-0 px-3 text-sm font-medium">
+                      {PATIENT_ID_PREFIX}
+                    </span>
+                    <Input
+                      id="patientIdDigits"
+                      value={formData.patientIdDigits}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          patientIdDigits: extractPatientDigits(e.target.value),
+                        }))
+                      }
+                      placeholder={patientDigitsPlaceholder}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      className="rounded-l-none border-l-0"
+                      required
+                    />
+                  </div>
+                  <p className="text-muted-foreground text-sm">
+                    P 접두사는 고정이며 숫자만 입력하세요.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -418,7 +473,7 @@ export default function ReservationPage() {
                     type="button"
                     variant="outline"
                     onClick={checkVisitHistory}
-                    disabled={!formData.patientId || !formData.phone}
+                    disabled={!formData.name || !formData.patientIdDigits || !formData.phone}
                     className="w-full"
                   >
                     방문 이력 확인

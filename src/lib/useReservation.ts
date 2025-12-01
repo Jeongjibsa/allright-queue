@@ -3,11 +3,13 @@
 
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
+  ensureDefaultPatients,
   getJSON,
-  setJSON,
+  getPatientsWithNormalizedIds,
   getReservationCapacityRules,
+  setJSON,
 } from "@/lib/storage";
-import { LS_KEYS } from "@/lib/constants";
+import { LS_KEYS, PATIENT_ID_PAD_LENGTH, PATIENT_ID_PREFIX } from "@/lib/constants";
 import type {
   ReservationCapacityRule,
   ReservationData,
@@ -15,6 +17,7 @@ import type {
 } from "@/types/domain";
 
 export type VisitHistoryCheck = {
+  name: string;
   patientId: string;
   phone: string;
   hasHistory: boolean;
@@ -196,34 +199,39 @@ export function buildReservationMessage(
   };
 }
 
+const sanitizePhoneNumber = (value: string) => value.replace(/\D/g, "");
+const normalizePatientId = (patientId: string): string => {
+  const digits = patientId.replace(/\D/g, "");
+  if (!digits) return "";
+  return `${PATIENT_ID_PREFIX}${digits.padStart(PATIENT_ID_PAD_LENGTH, "0")}`;
+};
+
 // 방문 이력 확인 훅
-export function useCheckVisitHistory(patientId: string, phone: string) {
+export function useCheckVisitHistory(name: string, patientId: string, phone: string) {
   return useQuery<VisitHistoryCheck>({
-    queryKey: ["visitHistory", patientId, phone],
+    queryKey: ["visitHistory", name, patientId, phone],
     queryFn: async () => {
-      // 실제로는 API 호출로 방문 이력을 확인해야 함
-      // 현재는 임시로 localStorage에서 확인
-      const storedQueues = localStorage.getItem("queueData");
-      let hasVisited = false;
+      ensureDefaultPatients();
+      const patients = getPatientsWithNormalizedIds();
+      const normalizedPatientId = normalizePatientId(patientId);
+      const trimmedName = name.trim();
+      const normalizedPhone = sanitizePhoneNumber(phone);
 
-      if (storedQueues) {
-        const queues = JSON.parse(storedQueues);
-        hasVisited = queues.some(
-          (queue: { patientId: string; phone: string }) =>
-            queue.patientId === patientId || queue.phone === phone
-        );
-      }
-
-      // 임시 로직: 환자 ID가 "P"로 시작하면 기존 환자로 간주
-      hasVisited = patientId.startsWith("P");
+      const hasVisited = patients.some(
+        (patient) =>
+          patient.id === normalizedPatientId &&
+          patient.name.trim() === trimmedName &&
+          sanitizePhoneNumber(patient.phone) === normalizedPhone
+      );
 
       return {
-        patientId,
-        phone,
+        name: trimmedName,
+        patientId: normalizedPatientId,
+        phone: normalizedPhone,
         hasHistory: hasVisited,
       };
     },
-    enabled: !!patientId && !!phone,
+    enabled: Boolean(name && patientId && phone),
   });
 }
 

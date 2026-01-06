@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] w-full items-center justify-center bg-background px-4 py-6">
+    <div className="bg-background flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
       <Card className="w-full max-w-md rounded-2xl shadow-sm">
         <CardHeader className="space-y-2">
           <div className="flex items-center justify-between">
@@ -105,5 +105,3 @@ export default function AdminLoginPage() {
     </div>
   );
 }
-
-
